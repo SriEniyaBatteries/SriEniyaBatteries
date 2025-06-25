@@ -1,0 +1,3320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopEase - Online Shopping</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <style>
+      /* Custom Tailwind Configuration for primary color and border-radius */
+      /* This must be correctly defined for Tailwind classes like bg-primary, bg-secondary to work */
+      :where([class^="ri-"])::before { content: "\f3c2"; }
+      .search-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+      }
+      .product-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      }
+      .page-transition {
+      transition: opacity 0.3s ease;
+      }
+      .skeleton {
+      background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      }
+      @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+      }
+
+      /* Styles for sidebars - crucial for transform animation */
+      .sidebar {
+          transition: transform 0.3s ease-in-out;
+      }
+      .sidebar.translate-x-0 {
+          transform: translateX(0);
+      }
+      .sidebar.translate-x-full {
+          transform: translateX(100%);
+      }
+
+      /* Explicit CSS for Add to Cart Button to ensure visibility and styling */
+      .add-to-cart-btn {
+          display: flex !important; /* Force display flex to ensure visibility */
+          align-items: center;
+          justify-content: center;
+          padding: 8px 16px; 
+          min-width: 120px; /* Ensure a consistent width */
+          flex-shrink: 0; 
+          white-space: nowrap; /* Prevent text from wrapping */
+          transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for color changes */
+      }
+
+      /* Custom styles for Auth Modal */
+      .auth-modal-content {
+          background: linear-gradient(to bottom right, #6b46c1, #a03c9d); /* Purple to pink gradient */
+          padding: 2rem;
+          border-radius: 1.5rem; /* More rounded corners */
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          position: relative; /* For absolute positioning of close button */
+          max-width: 90%; /* Responsive width */
+      }
+
+      .auth-input {
+          background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: #333;
+          padding: 0.75rem 1rem;
+          border-radius: 0.75rem; /* More rounded inputs */
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .auth-input::placeholder {
+          color: #666;
+      }
+
+      .auth-input:focus {
+          outline: none;
+          border-color: #f0f0f0;
+          box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+      }
+
+      .auth-button {
+          background: linear-gradient(to right, #6a0dad, #ec4899); /* Deeper purple to stronger pink */
+          color: white;
+          font-weight: 600;
+          padding: 0.75rem 1.5rem;
+          border-radius: 9999px; /* Fully rounded */
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+          border: none; /* Remove default button border */
+      }
+
+      .auth-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+          background: linear-gradient(to right, #8a2be2, #f472b6); /* Slightly lighter on hover */
+      }
+
+      .auth-link {
+          color: #f0f0f0; /* Lighter color for links on dark background */
+          text-decoration: none;
+          font-weight: 500;
+          transition: color 0.2s ease;
+      }
+
+      .auth-link:hover {
+          color: #fff;
+          text-decoration: underline;
+      }
+      /* Custom styles for info/error messages */
+      .message-box {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background-color: #333;
+          color: white;
+          padding: 15px 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          z-index: 1000;
+          opacity: 0;
+          transform: translateY(-20px);
+          transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+      }
+      .message-box.show {
+          opacity: 1;
+          transform: translateY(0);
+      }
+
+      /* Explicit CSS for User Icon Visibility */
+      #userButton {
+          display: flex !important; /* Ensure the user button container is always visible */
+          align-items: center;
+          justify-content: center;
+          position: relative; /* For absolute positioning of inner icons */
+          width: 40px; /* Or whatever size fits your design */
+          height: 40px; /* Or whatever size fits your design */
+      }
+
+      /* The ri-user-line icon should always be visible */
+      #userRiIcon {
+          position: absolute; /* Allows icons to overlap in the same space */
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex; /* Ensure these are flex containers for centering */
+          align-items: center;
+          justify-content: center;
+          transition: opacity 0.2s ease; /* Smooth transition when toggling visibility */
+      }
+
+      /* The userInitialIcon should always be hidden */
+      #userInitialIcon {
+          display: none !important; /* Force hide the initial display */
+      }
+
+
+      /* Tailwind config for colors and border-radius */
+      /* This block is usually placed in a script tag within head */
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { primary: "#3b82f6", secondary: "#10b981" }, /* secondary is now a distinct green */
+            borderRadius: {
+              none: "0px",
+              sm: "4px",
+              DEFAULT: "8px",
+              md: "12px",
+              lg: "16px",
+              xl: "20px",
+              "2xl": "24px",
+              "3xl": "32px",
+              full: "9999px",
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <div
+        class="container mx-auto px-4 py-4 flex items-center justify-between"
+      >
+        <img src="logo.png" alt="PowerCell Logo" class="h-10 sm:h-12 md:h-14 object-contain" style="padding-right:40px" />
+        <div class="relative w-full max-w-xl mx-4">
+          <div
+            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+          >
+            <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+              <i class="ri-search-line"></i>
+            </div>
+          </div>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input w-full py-2.5 pl-10 pr-4 bg-gray-100 border-none rounded-button text-gray-700 placeholder-gray-500"
+            placeholder="Search for products..."
+          />
+          <div
+            class="absolute inset-y-0 right-0 flex items-center pr-3"
+            id="clearSearch"
+            style="display: none; cursor: pointer;"
+          >
+            <div
+              class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600"
+            >
+              <i class="ri-close-line"></i>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative" id="wishlistButton">
+            <div class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary transition cursor-pointer">
+              <i class="ri-heart-line ri-lg"></i>
+            </div>
+            <span class="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 flex items-center justify-center rounded-full" id="wishlistCount">0</span>
+          </div>
+         <div class="relative" id="cartButton">
+            <div
+              class="w-10 h-10 flex items-center justify-center text-gray-700 hover:text-primary transition cursor-pointer"
+            >
+              <i class="ri-shopping-cart-line ri-lg"></i>
+            </div>
+            <span
+              id="cartCount"
+              class="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 flex items-center justify-center rounded-full"
+              >0</span
+            >
+          </div>
+          <!-- User Icon / Initial Display -->
+          <a href="#" class="p-2 text-gray-700 hover:text-primary" id="userButton">
+            <!-- userRiIcon is always shown -->
+            <i class="ri-user-line ri-lg" id="userRiIcon"></i>
+            <!-- userInitialIcon is always hidden -->
+            <div id="userInitialIcon" class="text-lg font-bold text-white bg-gray-700 rounded-full hidden w-8 h-8 flex items-center justify-center"></div>
+          </a>
+        </div>
+      </div>
+    </header>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+      <!-- Category Filters -->
+      <div class="mb-8">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Categories</h2>
+        <div class="flex flex-wrap gap-2" id="categoryFilters">
+          <button
+            class="category-filter px-4 py-2 rounded-full text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors !rounded-button whitespace-nowrap"
+            data-category="all"
+          >
+            All Products
+          </button>
+        </div>
+      </div>
+      <!-- Active Filters -->
+      <div id="activeFilters" class="flex items-center gap-2 mb-6 hidden">
+        <span class="text-sm text-gray-600">Active filters:</span>
+        <div class="flex flex-wrap gap-2" id="activeFilterTags"></div>
+      </div>
+      <!-- Search Results Indicator -->
+      <div id="searchResultsIndicator" class="mb-6 hidden">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-gray-800">
+            Showing results for:
+            <span id="searchTerm" class="text-primary"></span>
+          </h2>
+          <button
+            id="clearSearchResults"
+            class="px-4 py-2 text-sm text-gray-600 hover:text-primary flex items-center !rounded-button whitespace-nowrap"
+          >
+            <div class="w-4 h-4 flex items-center justify-center mr-1">
+              <i class="ri-arrow-left-line"></i>
+            </div>
+            Show all products
+          </button>
+        </div>
+      </div>
+      <!-- No Results Message -->
+      <div
+        id="noResultsMessage"
+        class="hidden flex flex-col items-center justify-center py-16"
+      >
+        <div
+          class="w-20 h-20 flex items-center justify-center text-gray-400 mb-4"
+        >
+          <i class="ri-search-line ri-3x"></i>
+        </div>
+        <h3 class="text-xl font-medium text-gray-700 mb-2">
+          No products found
+        </h3>
+        <p class="text-gray-500 mb-6">
+          We couldn't find any products matching your search.
+        </p>
+        <button
+          id="resetSearchBtn"
+          class="px-6 py-2.5 bg-primary text-white font-medium hover:bg-primary/90 !rounded-button whitespace-nowrap"
+        >
+          View all products
+        </button>
+      </div>
+      <!-- Loading Skeleton -->
+      <div id="loadingSkeleton" class="hidden">
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+        >
+          <!-- Skeleton Cards -->
+          <div class="skeleton h-80 rounded"></div>
+          <div class="skeleton h-80 rounded"></div>
+          <div class="skeleton h-80 rounded"></div>
+          <div class="skeleton h-80 rounded"></div>
+          <div class="skeleton h-80 rounded"></div>
+          <div class="skeleton h-80 rounded"></div>
+          <div class="skeleton h-80 rounded"></div>
+          <div class="skeleton h-80 rounded"></div>
+        </div>
+      </div>
+      <!-- Error Message (for product loading failures) -->
+      <div
+        id="errorMessage"
+        class="hidden flex flex-col items-center justify-center py-16"
+      >
+        <div
+          class="w-20 h-20 flex items-center justify-center text-red-500 mb-4"
+        >
+          <i class="ri-error-warning-line ri-3x"></i>
+        </div>
+        <h3 class="text-xl font-medium text-gray-700 mb-2">
+          Something went wrong
+        </h3>
+        <p class="text-gray-500 mb-6">
+          We're having trouble loading the products. Please try again.
+        </p>
+        <button
+          id="retryBtn"
+          class="px-6 py-2.5 bg-primary text-white font-medium hover:bg-primary/90 !rounded-button whitespace-nowrap"
+        >
+          Try again
+        </button>
+      </div>
+      <!-- Products Grid -->
+      <div
+        id="productsContainer"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      >
+        <!-- Products will be populated here by JavaScript -->
+      </div>
+      <!-- Pagination -->
+      <div class="flex justify-center mt-12 mb-8">
+        <nav
+          class="inline-flex rounded-md shadow-sm -space-x-px"
+          aria-label="Pagination"
+          id="pagination"
+        >
+          <button
+            class="pagination-btn relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            id="prevPage"
+            disabled
+          >
+            <div class="w-5 h-5 flex items-center justify-center">
+              <i class="ri-arrow-left-s-line"></i>
+            </div>
+            <span class="sr-only">Previous</span>
+          </button>
+          <!-- Page numbers will be populated here by JavaScript -->
+          <button
+            class="pagination-btn relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            id="nextPage"
+          >
+            <div class="w-5 h-5 flex items-center justify-center">
+              <i class="ri-arrow-right-s-line"></i>
+            </div>
+            <span class="sr-only">Next</span>
+          </button>
+        </nav>
+      </div>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-12">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <img src="logo.png" alt="PowerCell Logo" class="h-10 sm:h-12 md:h-14 object-contain" style="padding-right:40px" />
+            <p class="mt-4 text-gray-600">
+              Your one-stop destination for quality products at affordable
+              prices.
+            </p>
+            <div class="flex space-x-4 mt-6">
+              <a href="#" class="text-gray-500 hover:text-primary">
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="ri-facebook-fill"></i>
+                </div>
+              </a>
+              <a href="#" class="text-gray-500 hover:text-primary">
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="ri-twitter-x-fill"></i>
+                </div>
+              </a>
+              <a href="#" class="text-gray-500 hover:text-primary">
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="ri-instagram-fill"></i>
+                </div>
+              </a>
+              <a href="#" class="text-gray-500 hover:text-primary">
+                <div
+                  class="w-6 h-6 flex items-center justify-center text-gray-600"
+                >
+                  <i class="ri-pinterest-fill"></i>
+                </div>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h3
+              class="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4"
+            >
+              Pages
+            </h3>
+            <ul class="space-y-3">
+              <li>
+                <a href="index.html" class="text-gray-600 hover:text-primary"
+                  >Home</a
+                >
+              </li>
+              <li>
+                <a href="product.html" class="text-gray-600 hover:text-primary"
+                  >Products</a
+                >
+              </li>
+              
+              <li>
+                <a href="contact.html" class="text-gray-600 hover:text-primary"
+                  >Contact Us</a
+                >
+              </li>
+              
+            </ul>
+          </div>
+          <div>
+            <h3
+              class="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4"
+            >
+              Customer Service
+            </h3>
+            <ul class="space-y-3">
+              <li>
+                <a href="contact.html" class="text-gray-600 hover:text-primary"
+                  >Contact Us</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Shipping Policy</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Returns & Exchanges</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary">FAQs</a>
+              </li>
+              
+            </ul>
+          </div>
+          <div>
+            <h3
+              class="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4"
+            >
+              Newsletter
+            </h3>
+            <p class="text-gray-600 mb-4">
+              Subscribe to get special offers and updates.
+            </p>
+            <div class="flex">
+              <input
+                type="email"
+                class="px-4 py-2 w-full border-gray-300 border rounded-l-button focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Your email"
+              />
+              <button
+                class="bg-primary text-white px-4 py-2 rounded-r-button hover:bg-primary/90 whitespace-nowrap"
+              >
+                Subscribe
+              </button>
+            </div>
+            <div class="mt-6">
+              <h4 class="text-sm font-semibold text-gray-900 mb-3">
+                We Accept
+              </h4>
+              <div class="flex space-x-3">
+                <div
+                  class="w-8 h-5 flex items-center justify-center text-gray-600"
+                >
+                  <i class="ri-visa-fill ri-lg"></i>
+                </div>
+                <div
+                  class="w-8 h-5 flex items-center justify-center text-gray-600"
+                >
+                  <i class="ri-mastercard-fill ri-lg"></i>
+                </div>
+                <div
+                  class="w-8 h-5 flex items-center justify-center text-gray-600"
+                >
+                  <i class="ri-paypal-fill ri-lg"></i>
+                </div>
+                <div
+                  class="w-8 h-5 flex items-center justify-center text-gray-600"
+                >
+                  <i class="ri-apple-fill ri-lg"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="border-t border-gray-200 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center"
+        >
+          <p class="text-gray-500 text-sm">
+            © 2025 logo. All rights reserved.
+          </p>
+          <div class="flex space-x-6 mt-4 md:mt-0">
+            <a href="#" class="text-sm text-gray-500 hover:text-primary"
+              >Privacy Policy</a
+            >
+            <a href="#" class="text-sm text-gray-500 hover:text-primary"
+              >Terms of Service</a
+            >
+            <a href="#" class="text-sm text-gray-500 hover:text-primary"
+              >Cookies Settings</a
+            >
+          </div>
+        </div>
+      </div>
+    </footer>
+    <!-- Cart Sidebar -->
+    <div
+      id="cartSidebar"
+      class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50 sidebar"
+    >
+      <div class="h-full flex flex-col">
+        <div class="p-4 border-b">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-800">Shopping Cart</h2>
+            <button id="closeCart" class="text-gray-400 hover:text-gray-600">
+              <div class="w-6 h-6 flex items-center justify-center">
+                <i class="ri-close-line ri-lg"></i>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4" id="cartItems">
+          <!-- Cart items will be dynamically inserted here -->
+        </div>
+        <div class="p-4 border-t">
+          <div class="flex justify-between mb-4">
+            <span class="text-gray-600">Total:</span>
+            <span class="text-xl font-semibold text-gray-800" id="cartTotal"
+              >₹0.00</span
+            >
+          </div>
+          <button
+            class="w-full bg-primary hover:bg-blue-600 text-white py-3 rounded-button font-medium transition duration-300 whitespace-nowrap"
+          >
+            Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wishlist Sidebar -->
+    <div
+      id="wishlistSidebar"
+      class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50 sidebar"
+    >
+      <div class="h-full flex flex-col">
+        <div class="p-4 border-b">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-800">Liked Products</h2>
+            <button id="closeWishlist" class="text-gray-400 hover:text-gray-600">
+              <div class="w-6 h-6 flex items-center justify-center">
+                <i class="ri-close-line ri-lg"></i>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4" id="wishlistItems">
+          <!-- Wishlist items will be dynamically inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Modal (Sign-in/Sign-up Popup) -->
+    <div id="authModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[100] hidden">
+        <div class="auth-modal-content w-full max-w-md">
+            <button id="closeAuthModal" class="absolute top-4 right-4 text-white hover:text-gray-200">
+                <i class="ri-close-line ri-lg"></i>
+            </button>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-6">
+                <div class="flex justify-center mb-6">
+                    <img src="logo.png" alt="App Logo" class="h-20 w-20 rounded-full border-4 border-white shadow-lg" />
+                </div>
+                <h2 class="text-2xl font-bold text-white text-center mb-6">Sri Eniya Batteries</h2>
+                <div>
+                    <label for="loginEmail" class="sr-only">Email</label>
+                    <input type="email" id="loginEmail" name="email" placeholder="Email address" required
+                           class="w-full auth-input">
+                </div>
+                <div>
+                    <label for="loginPassword" class="sr-only">Password</label>
+                    <input type="password" id="loginPassword" name="password" placeholder="Password" required
+                           class="w-full auth-input">
+                </div>
+                <p id="loginError" class="text-red-300 text-sm text-center"></p>
+                <button type="submit" class="w-full auth-button">
+                    Login
+                </button>
+                <p class="text-center text-white text-sm mt-4">
+                    Don't have an account? <a href="#" id="showSignup" class="auth-link">Sign Up</a>
+                </p>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="space-y-6 hidden">
+                <div class="flex justify-center mb-6">
+                    <img src="logo.png" alt="App Logo" class="h-20 w-20 rounded-full border-4 border-white shadow-lg" />
+                </div>
+                <h2 class="text-2xl font-bold text-white text-center mb-6">Sri Eniya Batteries</h2>
+                <div>
+                    <label for="signupEmail" class="sr-only">Email</label>
+                    <input type="email" id="signupEmail" name="email" placeholder="Email address" required
+                           class="w-full auth-input">
+                </div>
+                <div>
+                    <label for="signupPassword" class="sr-only">Password</label>
+                    <input type="password" id="signupPassword" name="password" placeholder="Password (min 6 characters)" required
+                           class="w-full auth-input">
+                </div>
+                <p id="signupError" class="text-red-300 text-sm text-center"></p>
+                <button type="submit" class="w-full auth-button">
+                    Sign Up
+                </button>
+                <p class="text-center text-white text-sm mt-4">
+                    Already have an account? <a href="#" id="showLogin" class="auth-link">Sign In</a>
+                </p>
+            </form>
+
+            <!-- Logged-in User View -->
+            <div id="loggedInUserView" class="space-y-6 text-center text-white hidden">
+                <div class="flex justify-center mb-4">
+                    <img src="logo.png" alt="User Icon" class="h-20 w-20 rounded-full border-4 border-white shadow-lg" />
+                </div>
+                <p class="text-xl font-semibold mb-2">Welcome,</p>
+                <p id="loggedInUserName" class="text-2xl font-bold break-words"></p>
+                <button id="logoutButtonModal" class="w-full auth-button mt-6">
+                    Log Out
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Message Box -->
+    <div id="messageBox" class="message-box hidden"></div>
+
+    <script>
+      // Product data - MOVED HERE FOR RELIABLE LOADING
+      const allProducts = [
+        {
+          id: 1,
+          name: "EXIDE EPIQ-EPIQ35L/R ",
+          price: 4071,
+          description:
+            "CAR/SUV: EXIDE EPIQ: 77M WARRANTY : 42F+35P",
+          image:
+            "https://m.media-amazon.com/images/I/31l3QBqU2eL.QL70_FMwebp.jpg",
+          category: "CAR/SUV",
+          war: "77MON WARRANTY"
+        },
+        {
+          id: 2,
+          name: "EXIDE EPIQ-EPIQ40LBH",
+          price: 4610,
+          description:
+            "CAR/SUV: EXIDE EPIQ: 77M WARRANTY: 42F+35P",
+          image:
+            "https://m.media-amazon.com/images/I/316apussXTL.QL70_FMwebp.jpg",
+          category: "CAR/SUV",
+          war: "77MON WARRANTY"
+        },
+        {
+          id: 3,
+          name: "EXIDE EPIQ-EPIQDIN74L",
+          price: 10298,
+          description:
+            "CAR/SUV: EXIDE EPIQ: 77M WARRANTY: 42F+35P",
+          image:
+            "https://5.imimg.com/data5/ANDROID/Default/2024/2/384349560/UV/BK/SQ/15206173/product-jpeg-1000x1000.jpg ",
+          category: "CAR/SUV",
+          war: "77MON WARRANTY"
+        },
+        {
+          id: 4,
+          name: "EXIDE MATRIX-MT40B20L/R",
+          price: 3656,
+          description:
+            "CAR/SUV: EXIDE MATRIX: 72M WARRANTY: 36F+36P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/366_Exide%20Matrix%20MT40B20L%20-%2035ah.jpg ",
+          category: "CAR/SUV",
+          war: "72MON WARRANTY"
+        },
+        {
+          id: 5,
+          name: "EXIDE MATRIX-MTRED45L",
+          price: 6912,
+          description:
+            "CAR/SUV: EXIDE MATRIX: 72M WARRANTY: 36F+36P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/100_100_Exide%20Matrix%20red%20MTRED45L.jpg ",
+          category: "CAR/SUV",
+          war: "72MON WARRANTY"
+        },
+        {
+          id: 6,
+          name: "EXIDE MATRIX-MTREDDIN100",
+          price: 16061,
+          description:
+            "CAR/SUV: EXIDE MATRIX: 72M WARRANTY: 36F+36P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/MTREDDIN100.jpg",
+          category: "CAR/SUV",
+          war: "72MON WARRANTY"
+        },
+        {
+          id: 7,
+          name: "EXIDE MILEAGE ISS-MLM42(ISS)",
+          price: 4576,
+          description:
+            "CAR/SUV: EXIDE MILEAGE ISS: 60M WARRANTY: 30F+30P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/9/454326096/ZG/TP/XN/26313045/exide-mileage-iss-mlm42-car-batteries.jpeg ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 8,
+          name: "EXIDE MILEAGE ISS-MLN55(ISS)",
+          price: 6096,
+          description:
+            "CAR/SUV: EXIDE MILEAGE ISS: 60M WARRANTY: 30F+30P",
+          image:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwfLf_m26n6fVYDQS7ymD_NARIpuV_Xrk3LA&sg",
+          category: "CAR/SUV",
+          war: "60M WARRANTY"
+        },
+        {
+          id: 9,
+          name: "EXIDE MILEAGE ISS-MLDIN70(ISS)",
+          price: 8093,
+          description:
+            "CAR/SUV: EXIDE MILEAGE ISS: 60M WARRANTY: 30F+30P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/287_Exide%20Mileage%20mldin70(iss)%20(70AH).jpg  ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 10,
+          name: "EXIDE MILEAGE-ML38B20L/R",
+          price: 3472,
+          description:
+            "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://www.galaxypowersystem.com/images/product/EXIDE-MILEAGE-ML38B20L-R-Battery.jpg ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 11,
+          name: "CAR/SUV: EXIDE MILEAGE-ML40LBH/R8H",
+          price: 4321,
+          description:
+            "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/392178175/QI/RZ/CJ/87074387/exide-mileage-ml40lbh-rbh-40ah-car-suv-battery.jpg ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 12,
+          name: "EXIDE MILEAGE-MLDIN44R/LH",
+          price: 5276,
+          description:
+            "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/79_79_Exide%20Mileage%20MLDIN44LH.jpg ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 13,
+          name: "EXIDE MILEAGE-ML45D21LBH",
+          price: 5787,
+          description:
+            "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://www.genuineautoelectricals.com/wp-content/uploads/Exide-Mileage-ML45D21LBH-jpg.webp ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 14,
+          name: "EXIDE MILEAGE-ML55B24L(T1)",
+          price: 5860,
+          description:
+            "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/5/309745369/EY/XI/DK/6975885/74-74-mldin55-500x500.jpg  ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 15,
+          name: "EXIDE MILEAGE-MLDIN50",
+          price: 5823,
+          description:
+            "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/MLDIN50_Resized.jpg",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 16,
+          name: "EXIDE MILEAGE-ML55D23L",
+          price: 6101,
+          description: "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://www.genuineautoelectricals.com/wp-content/uploads/2021/11/Exide-Mileage-ML55D23L.jpg ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+
+        },
+        {
+          id: 17,
+          name: "EXIDE MILEAGE-MLDIN55/R",
+          price: 6705,
+          description: "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2025/4/504556169/QH/YL/XY/163351731/exide-mileage-mldin55-r-car-battery-500x500.jpg ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 18,
+          name: "EXIDE MILEAGE-MLDIN60",
+          price: 6875,
+          description: "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/76_76_MLDIN60.jpg",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 19,
+          name: "EXIDE MILEAGE-MLDIN66",
+          price: 6904,
+          description: "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://m.media-amazon.com/images/I/71ggAUVHzDL.AC_UF1000,1000_QL80.jpg",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 20,
+          name: "EXIDE MILEAGE-ML75D23LBH",
+          price: 6441,
+          description: "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://m.media-amazon.com/images/I/71ggAUVHzDL.AC_UF1000,1000_QL80.jpg",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 21,
+          name: "EXIDE MILEAGE-ML85D26R",
+          price: 7449,
+          description:
+            "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://inverterchennai.com/images/stories/virtuemart/product/ML75D23LBH.png",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 22,
+          name: "EXIDE MILEAGE-MLDIN80",
+          price: 10172,
+          description: "CAR/SUV: EXIDE MILEAGE: 60M WARRANTY: 30F+30P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2025/1/480952846/JO/NE/GK/151575097/exide-ml55d23l-car-battery.jpeg ",
+          category: "CAR/SUV",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 23,
+          name: "EXIDE EEZY ISS-EYDIN47RMFEFB",
+          price: 5626,
+          description:
+            "CAR/SUV: EXIDE EEZY ISS: 48M WARRANTY: 24F+24P",
+          image:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTC7HiT1_ytxTVEqribZbNShtMqzVv-gaAvJA&s",
+          category: "CAR/SUV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 24,
+          name: "EXIDE EEZY ISS-EYDIN52RMFEFB",
+          price: 5907,
+          description: "CAR/SUV: EXIDE EEZY ISS: 48M WARRANTY: 24F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/9/450786739/HJ/EP/JX/45020466/exide-eezy-iss-eydin47rmfefb-car-battery-500x500.jpg ",
+          category: "CAR/SUV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 25,
+          name: "EXIDE EEZY ISS-EYDIN78LMFEFB",
+          price: 8103,
+          description:
+            "CAR/SUV: EXIDE EEZY ISS: 48M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/393297188/DT/NI/PX/87074387/exide-eezy-iss-eydin52rmfefb-52ah-car-suv-battery.jpg  ",
+          category: "CAR/SUV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 26,
+          name: "EXIDE EEZY-EY34B19L/R",
+          price: 3140,
+          description:
+            "CAR/SUV: EXIDE EEZY: 48M WARRANTY: 24F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/393298070/TU/VT/NE/87074387/exide-eezy-iss-eydin78lmfefb-78ah-car-suv-battery.jpg ",
+          category: "CAR/SUV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 27,
+          name: "EXIDE EEZY-EY700L/R",
+          price: 6640,
+          description:
+            "CAR/SUV: EXIDE EEZY: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/EY34B19L.jpg ",
+          category: "CAR/SUV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 28,
+          name: "EXIDE EEZY-EY700F/EY700LF",
+          price: 6640,
+          description:
+            "CAR/SUV: EXIDE EEZY: 48 WARRANTY: 24F+24P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/EY700.jpg ",
+          category: "CAR/SUV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 29,
+          name: "EXIDE EEZY-EY80D23R",
+          price: 6640,
+          description:
+            "CAR/SUV: EXIDE EEZY: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/EY700LF.jpg",
+          category: "CAR/SUV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 30,
+          name: "EXIDE EEZY-EY105D31L/R",
+          price: 7233,
+          description:
+            "CAR/SUV: EXIDE EEZY: 48M WARRANTY: 24F+24P",
+          image:
+            "https://solar-world.in/cdn/shop/files/DBEC417106_1694687549_ey105d31r.jpg?v=1706532674  ",
+          category: "CAR/SUV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 31,
+          name: "EXIDE RIDE-RIDE35L/R",
+          price: 2792,
+          description:
+            "CAR/SUV: EXIDE RIDE:24M WARRANTY: 12F+12P",
+          image:
+            "https://www.moxikart.com/assets/images/fairdealbattery/battery/585_exide-eezy-ey105d31l-85ah-battery-min.jpg   ",
+          category: "CAR/SUV",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 32,
+          name: "EXIDE RIDE-RIDE45L",
+          price: 4875,
+          description:
+            "CAR/SUV: EXIDE RIDE: 24M WARRANTY: 12F+12P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/RIDE35L.jpg",
+          category: "CAR/SUV",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 33,
+          name: "EXIDE RIDE-RIDE700L/R",
+          price: 4997,
+          description:
+            "CAR/SUV: EXIDE RIDE:24M WARRANTY: 12F+12P",
+          image:
+            "https://m.media-amazon.com/images/I/31vYb1AmOwL.AC_SY350_QL15.jpg ",
+          category: "CAR/SUV",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 34,
+          name: "EXIDE RIDE-RIDE700LF/RF",
+          price: 4997,
+          description:
+            "CAR/SUV: EXIDE RIDE: 24M WARRANTY: 12F+12P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/RIDE700LF.jpg ",
+          category: "CAR/SUV",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 35,
+          name: "EXIDE EKO-EKO32",
+          price: 2799,
+          description:
+            "3W/LCV: EXIDE EKO: 24M WARRANTY:24F",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2025/4/500389735/LS/HZ/QN/216839773/eko55l-exide-three-wheeler-battery.jpg  ",
+          category: "3W/LCV",
+          war: "24M WARRANTY"
+        },
+        {
+          id: 36,
+          name: "EXIDE EKO-EKO40L",
+          price: 3360,
+          description:
+            "3W/LCV: EXIDE EKO:24M WARRANTY: 24F",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/EKO32.jpg ",
+          category: "3W/LCV",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 37,
+          name: "EXIDE EKO-EKO50L",
+          price: 4714,
+          description:
+            "3W/LCV: EXIDE EKO:24M WARRANTY: 24F",
+          image:
+            "https://m.media-amazon.com/images/I/31JclyTl-HL.AC_UF1000,1000_QL80.jpg",
+          category: "3W/LCV",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 38,
+          name: "EXIDE EKO-EKOSSL",
+          price: 4810,
+          description:
+            "3W/LCV: EXIDE EKO: 24M WARRANTY: 24F",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/EKO50L.jpg ",
+          category: "3W/LCV",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 39,
+          name: "EXIDE EKO-EKO60L/R",
+          price: 4930,
+          description:
+            "3W/LCV: EXIDE EKO: 24M WARRANTY: 24F",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/EKO60L_Resized.jpg ",
+          category: "3W/LCV",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 40,
+          name: "DISTILLO-DMWATER-5L",
+          price: 155,
+          description:
+            "DMWATER: DISTILLO-DMWATER-5L",
+          image:
+            "https://5.imimg.com/data5/NSDMERP/Default/2022/9/MI/HP/JW/160054320/dm-water-5-liters-1662972457334.jpg ",
+          category: "DM WATER",
+          war: "NA"
+        },
+        {
+          id: 41,
+          name: "EXIDE XPRESS-XP800",
+          price: 6730,
+          description: "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/129_Xpress%20XP800.jpg",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 42,
+          name: "EXIDE XPRESS-XP800F",
+          price: 6730,
+          description: "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/XP800F.jpg",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 43,
+          name: "EXIDE XPRESS-XP880",
+          price: 7475,
+          description: "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://www.genuineautoelectricals.com/wp-content/uploads/Exide-Xpress-XP1000H29R-banner.jpg  ",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 44,
+          name: "EXIDE XPRESS-XP1000",
+          price: 8530,
+          description: "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/10/FL/TM/OP/26791834/exide-jai-kisan-fki0-ki88t-tlh-500x500.jpg   ",
+          category: "CV",
+          war: "42MON WARARNTY"
+        },
+        {
+          id: 45,
+          name: "EXIDE XPRESS-XP1000H29R",
+          price: 8264,
+          description: "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/10/FL/TM/OP/26791834/exide-jai-kisan-fki0-ki88t-tlh-500x500.jpg   ",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 46,
+          name: "EXIDE XPRESS-XP1200",
+          price: 10512,
+          description:
+            "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/XP1200.jpg",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 47,
+          name: "EXIDE XPRESS-XP1200L(RH)",
+          price: 10512,
+          description: "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/XP1200L(RH).jpg",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 48,
+          name: "EXIDE XPRESS-XP1300",
+          price: 10749,
+          description:
+            "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://images.jdmagicbox.com/quickquotes/images_main/exide-xpress-xp1300-truck-battery-warranty-42-months-2222216460-72e1xp99.png  ",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 49,
+          name: "EXIDE XPRESS-XP1500",
+          price: 13843,
+          description: "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://img.thecdn.in/53976/1663075247378_SKU-0210_0.jpg?format=webp",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 50,
+          name: "EXIDE XPRESS-XP1800",
+          price: 16409,
+          description:
+            "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2022/6/BP/XU/CD/143020971/ki75t3-1000x1000.jpg   ",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 51,
+          name: "EXIDE XPRESS-XP2000",
+          price: 22089,
+          description:
+            "CV: EXIDE XPRESS: 42M WARRANTY: 24F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2022/10/FL/TM/OP/26791834/exide-jai-kisan-fki0-ki88t-tlh-500x500.jpg   ",
+          category: "CV",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 52,
+          name: "EXIDE JAI KISAN-KI75T",
+          price: 6585,
+          description:
+            "TRACTOR: EXIDE JAI KISAN: 42M WARRANTY: 24F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/11/463275792/VR/TU/SL/160234795/exide-jai-kisan-ki88tlh-500x500.jpg   ",
+          category: "TRACTOR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 53,
+          name: "EXIDE JAI KISAN-KI80T",
+          price: 6722,
+          description:
+            "TRACTOR: EXIDE JAI KISAN: 42M WARRANTY: 24F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/11/463275794/YV/TY/GJ/160234795/exide-jai-kisan-ki88tlh-500x500.png  ",
+          category: "TRACTOR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 54,
+          name: "EXIDE JAI KISAN-KI88TLH",
+          price: 6866,
+          description:
+            "TRACTOR: EXIDE JAI KISAN: 42M WARRANTY: 24F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/3/FY/LD/DK/2318175/exide-jai-kisan-battery-500x500.jpg  ",
+          category: "TRACTOR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 55,
+          name: "EXIDE JAI-KISAN-KI88T",
+          price: 6866,
+          description:
+            "TRACTOR: EXIDE JAI KISAN: 42M WARRANTY: 24F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/11/359348812/LJ/NI/SW/11499258/exide-jai-kisan-ki99t-tractor-battery.jpg ",
+          category: "TRACTOR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 56,
+          name: "EXIDE JAI KISAN-KI90H29L",
+          price: 6866,
+          description:
+            "TRACTOR: EXIDE JAI KISAN: 42M WARRANTY: 24F+18P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/Exide_Jai_Kisan01.jpg   ",
+          category: "TRACTOR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 57,
+          name: "EXIDE JAI KISAN-KI99T",
+          price: 7916,
+          description:
+            "TRACTOR: EXIDE JAI KISAN: 42M WARRANTY: 24F+18P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/DRIV35L.jpg ",
+          category: "TRACTOR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 58,
+          name: "EXIDE DRIVE-DRIVE35L",
+          price: 3165,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/8/440755151/PQ/EW/KX/158262853/exide-drive40lbh-40ah-36m-1.jpg  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 59,
+          name: "EXIDE DRIVE-DRIVE40LBH",
+          price: 3559,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/DRIVE45L.jpg ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 60,
+          name: "EXIDE DRIVE-DRIVE45L/R",
+          price: 5265,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://exidebatterywala.com/upload/images/20240104_185721_RIDE700R%2012%20TO%24W.jpg  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 61,
+          name: "EXIDE DRIVE-DRIVE700R",
+          price: 6221,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/DRIVE700RF.jpg",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 62,
+          name: "EXIDE DRIVE-DRIVE700RF",
+          price: 6221,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/8/440760374/MU/NQ/KT/158262853/exide-drive80l-r-80ah-36m-1-500x500.jpg  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 63,
+          name: "EXIDE DRIVE-DRIVE80L/R",
+          price: 6006,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/8/440761208/AL/TN/ZU/158262853/exide-drive80lf-rf-80ah-36m-1.jpg ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 64,
+          name: "EXIDE DRIVE-DRIVE80LF/RF",
+          price: 6006,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/392082294/NG/CT/MF/87074387/exide-hkva-048exidep052m-48v5-2kva-ah-dsp-ai-pure-sine-inverter.jpg  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 65,
+          name: "EXIDE DRIVE-DRIVE88L",
+          price: 6452,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/DRIVE88L_Resized.jpg  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 66,
+          name: "EXIDE DRIVE-DRIVE100L",
+          price: 7076,
+          description: "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://3.imimg.com/data3/NL/KI/MY-1077382/exide-battery-1000x1000.jpg",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 67,
+          name: "EXIDE DRIVE-DRIVE130R",
+          price: 9719,
+          description: "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://exidechennai.com/images/products/1678798150EXIDE_DRIVE.jpg",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 68,
+          name: "EXIDE DRIVE-DRIVE150R",
+          price: 11669,
+          description: "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://5.imimg.com/data5/ANDROID/Default/2024/2/383116085/ZN/FY/VL/3223603/product-jpeg.jpeg  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 69,
+          name: "EXIDE DRIVE-DRIVE180R",
+          price: 15221,
+          description: "CAR/SUV/3W/TRACTOR/CV: EXIDE DRIVE: 36M WARRANTY: 18F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/393371019/BE/GU/RN/87074387/exide-eride-tubular-plus-ertbplus135n-135ah-e-rickshaw-battery.jpg  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "36MON WARRANTY"
+        },
+        {
+          id: 70,
+          name: "EXIDE ERIDE TUBULAR PLUS-ERTBPLUS123N",
+          price: 8835,
+          description: "E-RICKSHAW: EXIDE ERIDE TUBULAR PLUS: 12F",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/7/436780980/SQ/HQ/FS/1718911/battery.jpg ",
+          category: "E-RICKSHAW",
+          war: "NA"
+        },
+        {
+          id: 71,
+          name: "EXIDE ERIDE TUBULAR PLUS-ERTBPLUS135N",
+          price: 9042,
+          description:
+            "E-RICKSHAW: EXIDE ERIDE TUBULAR PLUS: 12F",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/393371986/HC/BH/KH/87074387/exide-eride-tubular-plus-ertbplus150n-150ah-e-rickshaw-battery.jpg  ",
+          category: "E-RICKSHAW",
+          war: "NA"
+        },
+        {
+          id: 72,
+          name: "EXIDE ERIDE TUBULAR PLUS-ERTBPLUS150N",
+          price: 10960,
+          description: "E-RICKSHAW: EXIDE ERIDE TUBULAR PLUS: 12F",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/7/325998177/OT/OJ/UM/192420516/exide-erflplus100l-e-ride-plus-battery.jpg ",
+          category: "E-RICKSHAW",
+          war: "NA"
+        },
+        {
+          id: 73,
+          name: "EXIDE ERIDE PLUS-ERFLPLUS100L",
+          price: 7188,
+          description:
+            "E-RICKSHAW: EXIDE ERIDE PLUS: 7F",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/88_Exide-Xplore-12X2.5L-C.jpg ",
+          category: "E-RICKSHAW",
+          war: "NA"
+        },
+        {
+          id: 74,
+          name: "EXIDE XPLORE-12XL2.5L-C",
+          price: 549,
+          description: "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/6/321013852/GL/IW/TZ/85868724/exide-xltz4-bike-battery-500x500.jpg  ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 75,
+          name: "EXIDE XPLORE-XLTZ4",
+          price: 600,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/9/341791915/KY/YL/JO/83290407/exide-xltz4a-battery.jpg   ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 76,
+          name: "EXIDE XPLORE-XLTZ4A",
+          price: 642,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.genuineautoelectricals.com/wp-content/uploads/exide-xplore-xltz5.jpg ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 77,
+          name: "EXIDE XPLORE-XLTZ5",
+          price: 860,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/11/359022605/IB/XK/HN/202197034/xltz5a-1.jpg  ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 78,
+          name: "EXIDE XPLORE-XLTZ5A",
+          price: 910,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/XLTZ6.jpg ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 79,
+          name: "XLTZ6",
+          price: 907,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/90_Exide-Xplore-12XL5L-B.jpg ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 80,
+          name: "EXIDE XPLORE-12XLSL-B",
+          price: 928,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/95_Exide-Xplore-XLTZ7.jpg ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 81,
+          name: "EXIDE XPLORE-XLTZ7",
+          price: 1215,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/89_Exide-Xplore-12X7B-B.jpg  ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 82,
+          name: "EXIDE XPLORE-12XL7B-B",
+          price: 1041,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/164_Exide-Xplore-XLTZ9.jpg   ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 83,
+          name: "EXIDE XPLORE-XLTZ9",
+          price: 1539,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/91_Exide-Xplore-12XL9-B.jpg ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 84,
+          name: "EXIDE XPLORE-XLTX14",
+          price: 2347,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.genuineautoelectricals.com/wp-content/uploads/exide-xplore-xltx14.webp ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 85,
+          name: "EXIDE XPLORE-12XL14L-A2",
+          price: 2746,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/3/294279355/VA/HT/VE/186544186/exide-14l-a2.jpg  ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 86,
+          name: "EXIDE XPLORE-12XL14L-A2",
+          price: 2746,
+          description:
+            "2-WHEELER: EXIDE XPLORE: 48M WARRANTY: 24F+24P",
+          image:
+            "https://solar-world.in/cdn/shop/files/WhatsAppImage2024-02-02at4.04.05PM.jpg?v=1706874388  ",
+          category: "2-WHEELER",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 87,
+          name: "EXIDE GQP-GQP12V700",
+          price: 5324,
+          description:
+            "EXIDE GQP-GQP12V700: DSP CU PURE SINE: 42M WARRANTY",
+          image:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3roQEidgEuKFSSm74zO30e4Qylio-rwkIyQ&s ",
+          category: "EXIDE GQP",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 88,
+          name: "EXIDE GQP-GQP12V900",
+          price: 5536,
+          description:
+            "EXIDE GQP-GQP12V900: DSP CU PURE SINE: 42M WARRANTY",
+          image:
+            "https://m.media-amazon.com/images/I/2103TWcm27L.AC.jpg",
+          category: "EXIDE GQP",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 89,
+          name: "EXIDE GQP-GQP12V1125",
+          price: 6385,
+          description:
+            "EXIDE GQP-GQP12V1125: DSP CU PURE SINE: 42M WARRANTY",
+          image:
+            "https://cdn.moglix.com/p/e5AQHvHf0Dlsy-large.jpg ",
+          category: "EXIDE GQP",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 90,
+          name: "EXIDE GQP-GQP12V1450N",
+          price: 8251,
+          description:
+            "EXIDE GQP-GQP12V1450N: MC CU PURE SINE: 42M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/7/324536998/TC/ID/GN/123397191/exide-star-1375-12v-warranty-42-months-500x500.jpeg ",
+          category: "EXIDE GQP",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 91,
+          name: "EXIDE GQP-GQP24V1625",
+          price: 8826,
+          description:
+            "EXIDE GQP-GQP24V1625: DSP CU PURE SINE: 42M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/5/308521208/EG/RV/PR/4562293/exide-inverterz-star12v700-500x500.jpeg   ",
+          category: "EXIDE GQP",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 92,
+          name: "EXIDE START-STAR12V700",
+          price: 4130,
+          description: "EXIDE STAR-STAR12V700: MC AL PURE SINE: 42M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/7/324532840/FS/EA/SW/123397191/exide-star-900-12v-warranty-42-months.jpeg  ",
+          category: "EXIDE STAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 93,
+          name: "EXIDE STAR-STAR12V900",
+          price: 4336,
+          description: "EXIDE STAR-STAR12V900: MC AL PURE SINE: 42M WARRANTY",
+          image:
+            "https://solar-world.in/cdn/shop/files/1701343543708_7524EB73CBE94E4A9F33D1C8516A3B46_4da2acaa-d91a-4435-80b8-338e6d5125f6.jpg?v=1706873555&width=1946 ",
+          category: "EXIDE STAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 94,
+          name: "EXIDE STAR-STAR12V1125",
+          price: 4954,
+          description: "EXIDE STAR-STAR12V1125: MC AL PURE SINE: 42M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/5/308529998/OJ/GN/LN/4562293/exide-inverterz-star12v1375.jpg  ",
+          category: "EXIDE STAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 95,
+          name: "EXIDE STAR-STAR12V1375",
+          price: 6190,
+          description: "EXIDE STAR-STAR12V1375: MC AL PURE SINE: 42M WARRANTY",
+          image:
+            "https://solar-world.in/cdn/shop/files/1701343543708_7524EB73CBE94E4A9F33D1C8516A3B46_1a3066a3-fc49-4c14-bda0-ebbe90181d17.jpg?v=1706873902&width=1946  ",
+          category: "EXIDE STAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 96,
+          name: "EXIDE STAR-STAR12V1625",
+          price: 7427,
+          description: "EXIDE STAR-STAR12V1625: MC AL PURE SINE: 42M WARRANTY",
+          image:
+            "https://solar-world.in/cdn/shop/files/1701343543708_7524EB73CBE94E4A9F33D1C8516A3B46_1a3066a3-fc49-4c14-bda0-ebbe90181d17.jpg?v=1706873902&width=1445 ",
+          category: "EXIDE STAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 97,
+          name: "EXIDE STAR-STAR24V1625",
+          price: 7117,
+          description:
+            "EXIDE STAR-STAR24V1625: MC AL PURE SINE: 42M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/5/308622851/KZ/SV/IH/4562293/exide-inverterz-magic12v875-500x500.jpg   ",
+          category: "EXIDE STAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 98,
+          name: "EXIDE STAR-STAR24V2550",
+          price: 11032,
+          description: "EXIDE STAR-STAR24V2550: MC AL PURE SINE: 42M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/5/308622851/KZ/SV/IH/4562293/exide-inverterz-magic12v875-500x500.jpg ",
+          category: "EXIDE MAGIC",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 99,
+          name: "EXIDE MAGIC-MAGIC12V800",
+          price: 3553,
+          description:
+            "EXIDE MAGIC-MAGIC12V800: MC ALUMINIUM: 42M WARRANTY",
+          image:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTIm4N575uUSWmXw9BcKusOqdnfhL4jDTnnUw&s",
+          category: "EXIDE MAGIC",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 100,
+          name: "EXIDE MAGIC-MAGIC12V875",
+          price: 3821,
+          description: "EXIDE MAGIC-MAGIC12V875: MC ALUMINIUM: 42M WARRANTY",
+          image:
+            "https://solar-world.in/cdn/shop/files/WhatsAppImage2024-01-25at4.01.52PM_59c2a484-d91a-4f89-a39f-781e28567e32.jpg?v=1706872782&width=1445  ",
+          category: "EXIDE MAGIC",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 101,
+          name: "EXIDE MAGIC-MAGIC12V1125",
+          price: 4130,
+          description:
+            "EXIDE MAGIC-MAGIC12V1125: MC ALUMINIUM: 42M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/7/438927829/SJ/IG/UD/158262853/exide-inverter-024exiden020-24v-2kva-24m-1.jpg   ",
+          category: "EXIDE MAGIC",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 102,
+          name: "EXIDE MAGIC-MAGIC24V1625",
+          price: 5881,
+          description:
+            "EXIDE MAGIC-MAGIC24V1625: MC ALUMINIUM: 42M WARRANTY",
+          image:
+            "https://solar-world.in/cdn/shop/files/exide-solar-inverter-removebg-preview.jpg?v=1706884632 ",
+          category: "EXIDE MAGIC",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 103,
+          name: "EXIDE HKVA-024EXIDEN020",
+          price: 10926,
+          description:
+            "EXIDE HKVA-024EXIDEN020: MC AL PURE SINE: 24M WARRANTY",
+          image:
+            "https://exidebattery.in/wp-content/uploads/2020/12/Exide-Inverter-3.5-KVA-_48-V-24-Months-Warranty-1.png  ",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 104,
+          name: "EXIDE HKVA-036EXIDEP025M",
+          price: 15295,
+          description:
+            "EXIDE HKVA-036EXIDEP025M: DSP AL PURE SINE: 24M WARRANTY",
+          image:
+            "https://cdn.moglix.com/p/BaoPOfXE5Lny2.jpg ",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 105,
+          name: "EXIDE HKVA-048EXIDEP035M",
+          price: 17224,
+          description:
+            "EXIDE HKVA-048EXIDEP035M: DSP AL PURE SINE: 24M WARRANTY",
+          image:
+            "https://cdn.moglix.com/p/6AnEfFiG1V7NT-xxlarge.jpg",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 106,
+          name: "EXIDE HKVA-048EXIDEP052M",
+          price: 32666,
+          description:
+            "EXIDE HKVA-048EXIDEP052M: DSP AL PURE SINE: 24M WARRANTY",
+          image:
+            "https://batterymela.com/wp-content/uploads/2022/09/Exide-Inverter-5-KVA-_48-V-24-Months-Warranty-1.png ",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 107,
+          name: "EXIDE HKVA-048EXIDEP025M",
+          price: 15659,
+          description:
+            "EXIDE HKVA-048EXIDEP025M: DSP AL PURE SINE: 24M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/392082294/NG/CT/MF/87074387/exide-hkva-048exidep052m-48v5-2kva-ah-dsp-ai-pure-sine-inverter.jpg  ",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 108,
+          name: "EXIDE HKVA-096EXIDEP052M",
+          price: 34212,
+          description:
+            "EXIDE HKVA-096EXIDEP052M: DSP AL PURE SINE: 24M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/7/438948960/FN/IQ/MF/158262853/exide-inverter-024exiden020-24v-2kva-24m-1.jpg   ",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 109,
+          name: "EXIDE HKVA-120EXIDEP075M",
+          price: 47604,
+          description:
+            "EXIDE HKVA-120EXIDEP075M: DSP AL PURE SINE: 24M WARRANTY",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/GP110D31R1.jpg",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 110,
+          name: "EXIDE HKVA-180EXIDEP100",
+          price: 68723,
+          description:
+            "EXIDE HKVA-180EXIDEP100: DSP CU PURE SINE: 24M WARRANTY",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/9/454142077/NY/HD/PP/26313045/exide-invzest-inverter-battery.jpg  ",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+          
+    
+        },
+        {
+          id: 111,
+          name: "EXIDE HKVA-192EXIDE120",
+          price: 75935,
+          description:
+            "EXIDE HKVA-192EXIDE120: DSP CU PURE SINE: 24M WARRANTY",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/114_Exide%20Invamaster%20IMTT1500.jpg  ",
+          category: "EXIDE HKVA",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 112,
+          name: "EXIDE GENPLUS-GP110D31R",
+          price: 7160,
+          description:
+            "EXIDE GENPLUS-GP110D31R: FLAT: 24M WARRANTY: 18F+6P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/7/438219707/DZ/QM/TI/158262853/exide-it500-150ah-slk-inverter-battery.jpg  ",
+          category: "EXIDE GENPLUS",
+          war: "24MON WARRANTY"
+        },
+        {
+          id: 113,
+          name: "EXIDE INVZEST WITH SILICA BONDS-IZTT1500",
+          price: 18804,
+          description:
+            "EXIDE INVEST WITH SILICA BONDS-IZTT1500: TALL TUBULAR: 72M WARRANTY: 36F+36P",
+          image:
+            "https://solar-world.in/cdn/shop/files/6D9E4ECF2B_1697172616_it500.jpg?v=1706858609 ",
+          category: "EXIDE INVZEST",
+          war: "72MON WARRANTY"
+        },
+        {
+          id: 114,
+          name: "EXIDE INVATUBULAR-IT500",
+          price: 16908,
+          description:
+            "EXIDE INVATUBULAR-IT500: TALL TUBULAR: 66M WARRANTY: 48F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/11/465628333/CD/LY/BE/69820450/exide-it-500-inva-tubular-battery-500x500.jpg ",
+          category: "EXIDE INVATUBULAR",
+          war: "66MON WARRANTY"
+        },
+        {
+          id: 115,
+          name: "EXIDE INVATUBULAR-IT500-SLK",
+          price: 16908,
+          description:
+            "EXIDE INVATUBULAR-IT500-SLK: TALL TABULAR: 66M WARRANTY: 48F+18P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/288_Exide%20INVA%20TUBULAR%20IT950%20260%20AH.jpg  ",
+          category: "EXIDE INVATUBULAR",
+          war: "66MON WARRANTY"
+        },
+        {
+          id: 116,
+          name: "EXIDE INVATUBULAR-IT750",
+          price: 20891,
+          description:
+            "EXIDE INVATUBULAR-IT750: TALL TUBULAR: 66M WARRANTY: 48F+18P",
+          image:
+            "https://battery4u.in/wp-content/uploads/2024/05/Exide-Invamaster-IMST1000-100AH.png ",
+          category: "EXIDE INVATUBULAR",
+          war: "66MON WARRANTY"
+        },
+        {
+          id: 117,
+          name: "EXIDE INVATUBULAR-IT900",
+          price: 23147,
+          description:
+            "EXIDE INVATUBULAR-IT900: TALL TUBULAR: 66M WARRANTY: 48F+18P",
+          image:
+            "https://rukminid2.flixcart.com/image/750/900/xif0q/inverter-battery/h/r/w/58-imtt1500-150ah-tall-tubular-battery-with-60-month-warranty-20-original-imahbbhhhzcmu36p.jpeg?q=90&crop=false  ",
+          category: "EXIDE INVATUBULAR",
+          war: "66MON WARRANTY"
+        },
+        {
+          id: 118,
+          name: "EXIDE INVATUBULAR-IT950",
+          price: 26609,
+          description: "EXIDE INVATUBULAAR-IT950: TALL TUBULAR: 66M WARRANTY: 48F+18",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/113_Exide%20Invamaster%20IMST1500%20-%20150AH.jpg   ",
+          category: "EXIDE INVATUBULAR",
+          war: "66MON WARRANTY"
+        },
+        {
+          id: 119,
+          name: "EXIDE INVAMASTER-IMST1000",
+          price: 10571,
+          description: "EXIDE INVAMASTER-IMST1000: SHORT TUBULAR: 60M WARRANTY: 36F+24P",
+          image:
+            "https://m.media-amazon.com/images/I/41IY2rIXx7L.AC.jpg",
+          category: "EXIDE INVAMASTER",
+          war: "60MON WARRANTY"
+
+        },
+        {
+          id: 120,
+          name: "EXIDE INVAMASTER-IMST1500",
+          price: 13469,
+          description: "EXIDE INVAMASTER-IMST1500: SHORT TUBULAR: 60M WARRANTY: 36F+24P",
+          image:
+            "https://m.media-amazon.com/images/I/61-maawNsGL.UF894,1000_QL80.jpg ",
+          category: "EXIDE INVAMASTER",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 121,
+          name: "EXIDE INVAMASTER-IMTT1500",
+          price: 14123,
+          description: "EXIDE INVAMASTER-IMTT1500: TALL TUBULAR: 60M WARRANTY: 36F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/7/438459771/JR/SV/QN/158262853/exide-battery-imtt2300-220ah-60m-1-500x500.jpg  ",
+          category: "EXIDE INVAMASTER",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 122,
+          name: "EXIDE INVAMASTER-IMTT1800",
+          price: 15980,
+          description: "EXIDE INVAMASTER-IMTT1800: TALL TUBULAR: 60M WARRANTY: 36F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/9/341351910/XR/JW/YY/6864507/imtt-2600-tall-tubular-1.jpeg ",
+          category: "EXIDE INVAMASTER",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 123,
+          name: "EXIDE INVAMASTER-IMTT2000",
+          price: 16910,
+          description:
+            "EXIDE INVAMASTER-IMTT2000: TALL TUBULAR: 60M WARRANTY: 36F+24P",
+          image:
+            "https://www.exidecare.com/assets/ProductImages/NewInvahomzShortTubular1x1_20230510.png  ",
+          category: "EXIDE INVAMASTER",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 124,
+          name: "EXIDE INVAMASTER-IMTT2300",
+          price: 19346,
+          description: "EXIDE INVAMASTER-IMTT2300: TALL TUBULAR: 60M WARRANTY: 36F+24P",
+          image:
+            "https://solar-world.in/cdn/shop/files/51jfpBoHvsL._AC_UF894_1000_QL80_7cb411b1-5ca0-44be-b281-c3dca570e039.jpg?v=1707218729&width=1445 ",
+          category: "EXIDE INVAMASTER",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 125,
+          name: "EXIDE INVAMASTER-IMTT2600",
+          price: 21130,
+          description:
+            "EXIDE INVAMASTER-IMTT2600: TALL TUBULAR: 60M WARRANTY: 36F+24P",
+          image:
+            "https://exidebatterywala.com/upload/images/20230329_140050_IHST1350.png",
+          category: "EXIDE INVAMASTER",
+          war: "60MON WARRANTY"
+        },
+        {
+          id: 126,
+          name: "EXIDE INVAHOMZ-IHST1000",
+          price: 7926,
+          description: "EXIDE INVAHOMZ-IHST1000: SHORT TUBULAR: 48M WARRANTY: 24F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/8/339245842/GN/OD/EW/24421863/imst1500-exide-inverter-battery-500x500.jpeg  ",
+          category: "EXIDE INVAHOMZ",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 127,
+          name: "EXIDE INVAHOMZ-IHST1200",
+          price: 9043,
+          description:
+            "EXIDE INVAHOMZ-IHST1200: SHORT TUBULAR: 48M WARRANTY: 24F+24P",
+          image:
+            "https://www.batterybhai.com/common/uploaded_files/battery_image/3FA672A25C_1741594135_b570b38c73_1697177883_ihtt2000.jpg",
+          category: "EXIDE INVAHOMZ",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 128,
+          name: "EXIDE INVAHOMZ-IHST1350",
+          price: 10475,
+          description: "EXIDE INVAHOMZ-IHST1350: SHORT TUBULAR: 48M WARRANTY: 24F+24P",
+          image:
+            "https://m.media-amazon.com/images/I/51jfpBoHvsL.jpg ",
+          category: "EXIDE INVAHOMZ",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 129,
+          name: "EXIDE INVAHOMZ-IHST1500",
+          price: 11525,
+          description:
+            "EXIDE INVAHOMZ-IHST1500: SHORT TUBULAR: 48M WARRANTY: 24F+24P",
+          image:
+            "https://m.media-amazon.com/images/I/61-4WQ+lqwL.jpg  ",
+          category: "EXIDE INVAHOMZ",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 130,
+          name: "EXIDE INVAHOMZ-IHTT1500",
+          price: 11889,
+          description:
+            "EXIDE INVAHOMZ-IHTT1500: TALL TUBULAR: 48M WARRANTY: TALL TUBULAR: 30F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2025/1/479052090/IJ/LW/BP/100578813/exide-invabrite-tubular-ibrst1350.png ",
+          category: "EXIDE INVAHOMZ",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 131,
+          name: "EXIDE INVAHOMZ-IHTT2000",
+          price: 15321,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE INVAHOMZ-IHTT2000: TALL TUBULAR: 48M WARRANTY: 30F+18P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/392004067/ZQ/VP/JK/87074387/exide-invabrite-ibrtt2000-180ah-tall-tubular-battery.jpg  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "48MON WARRANTY"
+        },
+        {
+          id: 132,
+          name: "EXIDE INVAHOMZ-JT2000",
+          price: 15006,
+          description:
+            "CAR/SUV/3W/TRACTOR/CV: EXIDE INVAHOMZ-IHJT2000: JUMBO TUBULAR: 48M WARRANTY: 30F+18P",
+          image:
+            "https://exidebatterywala.com/upload/images/20230329_141846_20230120_180737_ibrfp4000_1.png  ",
+          category: "CAR/SUV/3W/TRACTOR/CV",
+          war: "48MON WARRANTY"
+        },
+          {
+          id: 133,
+          name: "EXIDE INVABRITE TUBULAR-IBRST1350",
+          price: 9443,
+          description:
+            "EXIDE INVABRITE TUBULAR-IBRST1350: SHORT TUBULAR: 42M WARRANTY: 18F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2023/10/357185917/WH/XB/HL/58245215/exide-ibrfp4500-flat-plate-battery.jpg   ",
+          category: "EXIDE INVABRITE TUBULAR",
+          war: "42MON WARRANTY"
+        },
+         {
+          id: 134,
+          name: "EXIDE INVABRITE TUBULAR-IBRTT2000",
+          price: 14170,
+          description:
+            "EXIDE INVABRITE TUBULAR-IBRTT2000: TALL TUBULAR: 42M WARRANTY: 18F+24P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2024/2/392004067/ZQ/VP/JK/87074387/exide-invabrite-ibrtt2000-180ah-tall-tubular-battery.jpg  ",
+          category: "EXIDE INVABRITE TUBULAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 135,
+          name: "EXIDE INVABRITE FLAT PLATE-IBRFP4000",
+          price: 8498,
+          description:
+            "EXIDE INVABRITE FLAT PLATE-IBRFP4000: FLAT PLATE: 42M WARRANTY: 21F+21P",
+          image:
+            "https://5.imimg.com/data5/SELLER/Default/2022/9/OE/HB/CL/5156363/105-exide-instabrite-ib1000-500x500.jpg   ",
+          category: "EXIDE INVABRITE TUBULAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 136,
+          name: "EXIDE INVABRITE FLAT PLATE-IBRFP4500",
+          price: 9781,
+          description:
+            "EXIDE INVABRITE FLAT PLATE-IBRFP4500: FLAT PLATE: 42M WARRANTY: 21F+21P",
+          image:
+            "https://www.genuineautoelectricals.com/wp-content/uploads/2021/05/Exide-InvaTubular-IT500-595x595.jpg   ",
+          category: "EXIDE INVABRITE TUBULAR",
+          war: "42MON WARRANTY"
+        },
+        {
+          id: 137,
+          name: "EXIDE INVABRITE FLAT PLATE-IBRFP5000",
+          price: 10893,
+          description:
+            "EXIDE INVABRITE FLAT PLATE-IBRFP5000: FLAT PLATE: 42M WARRANTY: 21F+18P",
+          image:
+            "https://www.batteryboss.in/assets/images/batteryboss/battery/113_Exide%20Invamaster%20IMST1500%20-%20150AH.jpg   ",
+          category: "EXIDE INVABRITE TUBULAR",
+          war: "42MON WARRANTY"
+        },
+        
+      ];
+
+
+      // Initialize cart and wishlist from localStorage (fallback for non-logged in or if Firebase isn't configured)
+      // These are now global in the non-module script
+      window.cart = JSON.parse(localStorage.getItem('cart')) || []; 
+      window.wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+
+      // DOM elements
+      const searchInput = document.getElementById("searchInput");
+      const categoryFilters = document.getElementById("categoryFilters");
+      const activeFiltersDisplay = document.getElementById("activeFilters");
+      const activeFilterTags = document.getElementById("activeFilterTags");
+      const productsContainer = document.getElementById("productsContainer");
+      const searchResultsIndicator = document.getElementById("searchResultsIndicator");
+      const searchTerm = document.getElementById("searchTerm");
+      const clearSearchResults = document.getElementById("clearSearchResults");
+      const noResultsMessage = document.getElementById("noResultsMessage");
+      const resetSearchBtn = document.getElementById("resetSearchBtn");
+      const loadingSkeleton = document.getElementById("loadingSkeleton");
+      const errorMessage = document.getElementById("errorMessage"); // For product loading errors
+      const retryBtn = document.getElementById("retryBtn");
+      const pagination = document.getElementById("pagination");
+      const prevPageBtn = document.getElementById("prevPage");
+      const nextPageBtn = document.getElementById("nextPage");
+
+      // Cart and Wishlist related DOM elements
+      const cartButton = document.getElementById("cartButton");
+      const cartSidebar = document.getElementById("cartSidebar");
+      const closeCart = document.getElementById("closeCart");
+      const cartCount = document.getElementById("cartCount");
+      const cartItemsContainer = document.getElementById("cartItems");
+      const cartTotal = document.getElementById("cartTotal");
+
+      const wishlistButton = document.getElementById("wishlistButton");
+      const wishlistSidebar = document.getElementById("wishlistSidebar");
+      const closeWishlist = document.getElementById("closeWishlist");
+      const wishlistCount = document.getElementById("wishlistCount");
+      const wishlistItemsContainer = document.getElementById("wishlistItems");
+
+      // Auth Modal DOM elements
+      const userButton = document.getElementById("userButton");
+      const authModal = document.getElementById("authModal");
+      const closeAuthModal = document.getElementById("closeAuthModal");
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const showSignupLink = document.getElementById("showSignup");
+      const showLoginLink = document.getElementById("showLogin");
+      const loginError = document.getElementById("loginError");
+      const signupError = document.getElementById("signupError");
+      // Renamed logoutButton to logoutButtonModal for clarity as it's inside the modal
+      const logoutButtonModal = document.getElementById("logoutButtonModal"); 
+      const userInitialIcon = document.getElementById("userInitialIcon");
+      const userRiIcon = document.getElementById("userRiIcon");
+      const loggedInUserView = document.getElementById("loggedInUserView");
+      const loggedInUserName = document.getElementById("loggedInUserName");
+
+      // Message box for non-critical errors/info
+      const messageBox = document.getElementById('messageBox');
+
+
+      // Get unique categories
+      const categories = [
+        ...new Set(allProducts.map((product) => product.category)),
+      ].sort();
+
+      // Create category filter buttons
+      categories.forEach((category) => {
+        const button = document.createElement("button");
+        button.className =
+          "category-filter px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors !rounded-button whitespace-nowrap";
+        button.setAttribute("data-category", category);
+        button.textContent = category;
+        categoryFilters.appendChild(button);
+      });
+
+      // State variables for product display
+      let currentProducts = [...allProducts];
+      let currentPage = 1;
+      let productsPerPage = 8;
+      let totalPages = Math.ceil(allProducts.length / productsPerPage);
+      let isSearchActive = false;
+
+      // Initial render on page load
+      document.addEventListener("DOMContentLoaded", function() {
+        initPage(); 
+        // No longer relying on Firebase for initial product load
+        renderProducts(currentProducts, currentPage); 
+        renderPagination(); 
+        hideLoading(); 
+        updateCartDisplay(); 
+        updateWishlistDisplay(); 
+        updateUserUI(); // Initial UI update for user icon
+      });
+
+
+      // Event listeners
+      searchInput.addEventListener("input", handleSearch);
+      document.getElementById("clearSearch").addEventListener("click", clearSearchInput);
+      clearSearchResults.addEventListener("click", resetSearch);
+      resetSearchBtn.addEventListener("click", resetSearch);
+      retryBtn.addEventListener("click", retryLoading);
+      prevPageBtn.addEventListener("click", goToPrevPage);
+      nextPageBtn.addEventListener("click", goToNextPage);
+
+      // Sidebar toggle listeners
+      cartButton.addEventListener("click", () => {
+          cartSidebar.classList.remove("translate-x-full");
+          cartSidebar.classList.add("translate-x-0");
+          renderCart(); // Render cart items when sidebar is opened
+      });
+
+      closeCart.addEventListener("click", () => {
+          cartSidebar.classList.remove("translate-x-0");
+          cartSidebar.classList.add("translate-x-full");
+      });
+
+      wishlistButton.addEventListener("click", () => {
+          wishlistSidebar.classList.remove("translate-x-full");
+          wishlistSidebar.classList.add("translate-x-0");
+          renderWishlist(); // Render wishlist items when sidebar is opened
+      });
+
+      closeWishlist.addEventListener("click", () => {
+          wishlistSidebar.classList.remove("translate-x-0");
+          wishlistSidebar.classList.add("translate-x-full");
+      });
+
+      // Auth modal event listeners
+      userButton.addEventListener("click", () => {
+          const currentUser = window.myAppFirebase?.currentUser;
+          // Always show login form unless specifically in logged-in view from a previous state
+          if (currentUser && currentUser.email && !currentUser.isAnonymous) {
+              // If logged in (and not anonymous), show user details
+              loggedInUserName.textContent = currentUser.email;
+              loggedInUserView.classList.remove("hidden");
+              loginForm.classList.add("hidden");
+              signupForm.classList.add("hidden");
+          } else {
+              // If not logged in or is anonymous, show login form
+              loggedInUserView.classList.add("hidden");
+              loginForm.classList.remove("hidden");
+              signupForm.classList.add("hidden");
+          }
+          authModal.classList.remove("hidden");
+          loginError.textContent = "";
+          signupError.textContent = "";
+      });
+
+      closeAuthModal.addEventListener("click", () => {
+          authModal.classList.add("hidden");
+      });
+
+      showSignupLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          loginForm.classList.add("hidden");
+          signupForm.classList.remove("hidden");
+          loggedInUserView.classList.add("hidden"); // Hide logged-in view
+          loginError.textContent = "";
+          signupError.textContent = "";
+      });
+
+      showLoginLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          signupForm.classList.add("hidden");
+          loginForm.classList.remove("hidden");
+          loggedInUserView.classList.add("hidden"); // Hide logged-in view
+          loginError.textContent = "";
+          signupError.textContent = "";
+      });
+
+      loginForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          if (window.myAppFirebase && typeof window.myAppFirebase.handleLogin === 'function') {
+              window.myAppFirebase.handleLogin(loginForm.loginEmail.value, loginForm.loginPassword.value);
+          } else {
+              displayMessage("Firebase is not ready. Cannot log in.", "error");
+              console.error("Firebase not initialized or handleLogin not available. Cannot log in.");
+          }
+      });
+
+      signupForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          if (window.myAppFirebase && typeof window.myAppFirebase.handleSignup === 'function') {
+              window.myAppFirebase.handleSignup(signupForm.signupEmail.value, signupForm.signupPassword.value);
+          } else {
+              displayMessage("Firebase is not ready. Cannot sign up.", "error");
+              console.error("Firebase not initialized or handleSignup not available. Cannot sign up.");
+          }
+      });
+      // Corrected logout button handler within the modal
+      logoutButtonModal.addEventListener("click", () => {
+          if (window.myAppFirebase && typeof window.myAppFirebase.handleLogout === 'function') {
+              window.myAppFirebase.handleLogout();
+          } else {
+              console.error("Firebase not initialized or handleLogout not available. Cannot log out.");
+          }
+      });
+
+
+      // Event delegation for Add to Cart and Wishlist buttons on product cards
+      productsContainer.addEventListener("click", (e) => {
+          const addToCartBtn = e.target.closest(".add-to-cart-btn");
+          const wishlistBtn = e.target.closest(".wishlist-icon");
+
+          if (addToCartBtn) {
+              const productId = parseInt(addToCartBtn.dataset.id);
+              addToCart(productId);
+          } else if (wishlistBtn) {
+              const productId = parseInt(wishlistBtn.dataset.id);
+              toggleWishlist(productId);
+          }
+      });
+
+      // Event delegation for removing items from cart sidebar
+      cartItemsContainer.addEventListener("click", (e) => {
+          const removeBtn = e.target.closest(".remove-btn");
+          if (removeBtn) {
+              const productId = parseInt(removeBtn.dataset.id);
+              removeFromCart(productId);
+          }
+      });
+
+      // Event delegation for removing items from wishlist sidebar
+      wishlistItemsContainer.addEventListener("click", (e) => {
+          const removeBtn = e.target.closest(".remove-btn");
+          const addToCartFromWishlistBtn = e.target.closest(".add-to-cart-from-wishlist-btn");
+
+          if (removeBtn) {
+              const productId = parseInt(removeBtn.dataset.id);
+              removeFromWishlist(productId);
+          } else if (addToCartFromWishlistBtn) {
+              const productId = parseInt(addToCartFromWishlistBtn.dataset.id);
+              addToCart(productId); 
+              removeFromWishlist(productId); // Optionally remove from wishlist after adding to cart
+          }
+      });
+
+
+      // Functions
+      function initPage() {
+        showLoading();
+      }
+
+      function handleSearch() {
+        const query = searchInput.value.trim().toLowerCase();
+        if (query) {
+          document.getElementById("clearSearch").style.display = "flex";
+          isSearchActive = true;
+          showLoading();
+          setTimeout(() => {
+            const filteredProducts = allProducts.filter(
+              (product) =>
+                product.name.toLowerCase().includes(query) ||
+                product.description.toLowerCase().includes(query) ||
+                product.category.toLowerCase().includes(query),
+            );
+            currentProducts = filteredProducts;
+            currentPage = 1;
+            if (filteredProducts.length > 0) {
+              searchTerm.textContent = query;
+              searchResultsIndicator.classList.remove("hidden");
+              noResultsMessage.classList.add("hidden");
+              renderProducts(filteredProducts, currentPage);
+              renderPagination();
+            } else {
+              searchResultsIndicator.classList.add("hidden");
+              noResultsMessage.classList.remove("hidden");
+              productsContainer.innerHTML = "";
+              pagination.classList.add("hidden");
+            }
+            hideLoading();
+          }, 300);
+        } else {
+          document.getElementById("clearSearch").style.display = "none";
+          resetSearch();
+        }
+      }
+
+      function clearSearchInput() {
+        searchInput.value = "";
+        document.getElementById("clearSearch").style.display = "none";
+        resetSearch();
+        searchInput.focus();
+      }
+
+      function resetFilters() {
+        const allButton = document.querySelector('[data-category="all"]');
+        const filterButtons = document.querySelectorAll(".category-filter");
+
+        filterButtons.forEach((btn) => {
+          btn.classList.remove("bg-primary", "text-white");
+          btn.classList.add("bg-gray-100", "text-gray-700");
+        });
+        allButton.classList.remove("bg-gray-100", "text-gray-700");
+        allButton.classList.add("bg-primary", "text-white");
+
+        activeFiltersDisplay.classList.add("hidden");
+        activeFilterTags.innerHTML = "";
+
+        currentProducts = [...allProducts];
+        currentPage = 1;
+        renderProducts(currentProducts, currentPage);
+        renderPagination();
+      }
+
+      function resetSearch() {
+        isSearchActive = false;
+        searchInput.value = "";
+        document.getElementById("clearSearch").style.display = "none";
+        searchResultsIndicator.classList.add("hidden");
+        noResultsMessage.classList.add("hidden");
+        resetFilters();
+        showLoading();
+        setTimeout(() => {
+          currentProducts = [...allProducts];
+          currentPage = 1;
+          renderProducts(currentProducts, currentPage);
+          renderPagination();
+          hideLoading();
+        }, 300);
+      }
+
+      function renderProducts(products, page) {
+        productsContainer.innerHTML = "";
+        const startIndex = (page - 1) * productsPerPage;
+        const endIndex = startIndex + productsPerPage;
+        const paginatedProducts = products.slice(startIndex, endIndex);
+
+        if (paginatedProducts.length > 0) {
+          productsContainer.classList.remove("hidden"); // Ensure products container is visible
+          paginatedProducts.forEach((product) => {
+            const productCard = createProductCard(product);
+            productsContainer.appendChild(productCard);
+          });
+          pagination.classList.remove("hidden");
+        } else {
+          productsContainer.classList.add("hidden"); // Hide product container if no products
+          // Updated logic for no results:
+          if (isSearchActive) {
+            noResultsMessage.classList.remove("hidden");
+            searchResultsIndicator.classList.add("hidden");
+          } else {
+            // Only show no results if there are genuinely no products at all
+            if (allProducts.length === 0) {
+              noResultsMessage.classList.remove("hidden");
+            }
+          }
+          pagination.classList.add("hidden");
+        }
+        updateWishlistIcons(); 
+        updateAddToCartButtons(); 
+      }
+
+      function createProductCard(product) {
+        const card = document.createElement("div");
+        card.className = "product-card bg-white rounded shadow-sm overflow-hidden";
+        card.innerHTML = `
+          <div class="relative h-48 overflow-hidden">
+              <img src="${product.image}" alt="${product.name}" class="w-full h-full object-top transition-transform duration-300 hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/200x200/e0e0e0/505050?text=Image+Not+Found';">
+              <button class="absolute top-2 left-2 text-gray-400 hover:text-red-500 transition wishlist-icon" data-id="${product.id}">
+                  <i class="ri-heart-line ri-lg"></i>
+              </button>
+          </div> 
+          <div
+              class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded"
+          >
+              ${product.war}
+          </div>
+          
+          <div class="p-4">
+              <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-lg font-medium text-gray-900 line-clamp-1">${product.name}</h3>
+                  <span class="font-semibold text-primary">₹${product.price.toFixed(2)}</span>
+              </div>
+              <p class="text-gray-600 text-sm mb-4 line-clamp-2">${product.description}</p>
+              <div class="flex justify-between items-center">
+                  <span class="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">${product.category}</span>
+                  <button class="add-to-cart-btn bg-primary hover:bg-blue-600 text-white rounded" data-id="${product.id}">
+                      <div class="w-4 h-4 flex items-center justify-center mr-1">
+                          <i class="ri-shopping-cart-line"></i>
+                      </div>
+                      Add to Cart
+                  </button>
+              </div>
+          </div>
+        `;
+        return card;
+      }
+
+      function renderPagination() {
+        const pageButtonsContainer = pagination.querySelector("div");
+        if (pageButtonsContainer) {
+          pageButtonsContainer.remove();
+        }
+        totalPages = Math.ceil(currentProducts.length / productsPerPage);
+        // Create page buttons container
+        const buttonsContainer = document.createElement("div");
+        buttonsContainer.className = "flex";
+        // Determine which page numbers to show
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4 && totalPages > 5) {
+          startPage = Math.max(1, endPage - 4);
+        }
+        // Add page number buttons
+        for (let i = startPage; i <= endPage; i++) {
+          const pageBtn = document.createElement("button");
+          pageBtn.className = `relative inline-flex items-center px-4 py-2 border ${
+            i === currentPage
+              ? "border-primary bg-primary/10 text-primary font-medium"
+              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+          } text-sm`;
+          pageBtn.textContent = i;
+          pageBtn.addEventListener("click", () => {
+            if (currentPage !== i) {
+              goToPage(i);
+            }
+          });
+          buttonsContainer.appendChild(pageBtn);
+        }
+        // Insert the page buttons between prev and next buttons
+        pagination.insertBefore(buttonsContainer, nextPageBtn);
+        // Update prev/next button states
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+        // Hide pagination if there's only one page
+        if (totalPages <= 1) {
+          pagination.classList.add("hidden");
+        } else {
+          pagination.classList.remove("hidden");
+        }
+      }
+
+      function goToPage(page) {
+        currentPage = page;
+        showLoading();
+        setTimeout(() => {
+          renderProducts(currentProducts, currentPage);
+          renderPagination();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          hideLoading();
+        }, 300);
+      }
+
+      function goToPrevPage() {
+        if (currentPage > 1) {
+          goToPage(currentPage - 1);
+        }
+      }
+
+      function goToNextPage() {
+        if (currentPage < totalPages) {
+          goToPage(currentPage + 1);
+        }
+      }
+
+      function showLoading() {
+        productsContainer.classList.add("opacity-0");
+        loadingSkeleton.classList.remove("hidden");
+        errorMessage.classList.add("hidden");
+      }
+
+      function hideLoading() {
+        loadingSkeleton.classList.add("hidden");
+        productsContainer.classList.remove("opacity-0");
+      }
+
+      // Updated displayErrorMessage function to use the custom message box
+      function displayMessage(message, type = 'info', duration = 3000) {
+          messageBox.textContent = message;
+          messageBox.className = 'message-box show'; // Reset classes and show
+          if (type === 'error') {
+              messageBox.style.backgroundColor = '#dc2626'; // Red for error
+          } else {
+              messageBox.style.backgroundColor = '#333'; // Dark gray for info
+          }
+
+          // Automatically hide after duration
+          setTimeout(() => {
+              messageBox.classList.remove('show');
+              // Optionally clear text after animation
+              setTimeout(() => { messageBox.textContent = ''; }, 300); 
+          }, duration);
+      }
+
+      function retryLoading() {
+        // This retry is for product fetching, which isn't network-dependent in this current setup.
+        // If products were fetched from an API, this would re-call the fetch function.
+        // For now, it just re-renders.
+        errorMessage.classList.add("hidden");
+        productsContainer.classList.remove("hidden");
+        initPage();
+        renderProducts(currentProducts, currentPage);
+        renderPagination();
+        hideLoading();
+      }
+
+      // Cart Functions (now conditionally saves to Firebase)
+      async function addToCart(productId) {
+          const productToAdd = allProducts.find(p => p.id === productId);
+          if (!productToAdd) return;
+
+          const existingItem = window.cart.find(item => item.id === productId);
+          if (existingItem) {
+              existingItem.quantity++;
+          } else {
+              window.cart.push({ ...productToAdd, quantity: 1 });
+          }
+          
+          const currentUser = window.myAppFirebase?.currentUser;
+          if (currentUser && !currentUser.isAnonymous) {
+              try {
+                  const userCartRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/cart`, "userCart");
+                  await window.myAppFirebase.setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
+                  displayMessage("Product added to cart (synced to cloud).", "info");
+              } catch (e) {
+                  console.error("Error writing cart to Firestore:", e);
+                  localStorage.setItem('cart', JSON.stringify(window.cart)); // Fallback to local storage
+                  displayMessage("Failed to sync cart to cloud. Data saved locally.", "error");
+              }
+          } else {
+              localStorage.setItem('cart', JSON.stringify(window.cart));
+              displayMessage("Product added to cart (saved locally).", "info");
+          }
+          updateCartDisplay();
+          updateAddToCartButtons(); 
+      }
+
+      async function removeFromCart(productId) {
+          window.cart = window.cart.filter(item => item.id !== productId);
+          
+          const currentUser = window.myAppFirebase?.currentUser;
+          if (currentUser && !currentUser.isAnonymous) {
+              try {
+                  const userCartRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/cart`, "userCart");
+                  await window.myAppFirebase.setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
+                  displayMessage("Product removed from cart (synced to cloud).", "info");
+              } catch (e) {
+                  console.error("Error removing item from Firestore cart:", e);
+                  localStorage.setItem('cart', JSON.stringify(window.cart)); // Fallback to local storage
+                  displayMessage("Failed to sync cart removal to cloud. Data removed locally.", "error");
+              }
+          } else {
+              localStorage.setItem('cart', JSON.stringify(window.cart));
+              displayMessage("Product removed from cart (removed locally).", "info");
+          }
+          updateCartDisplay();
+          renderCart(); 
+          updateAddToCartButtons(); 
+      }
+
+      function updateCartDisplay() {
+          cartCount.textContent = window.cart.reduce((sum, item) => sum + item.quantity, 0);
+          let total = 0;
+          window.cart.forEach(item => {
+              total += item.price * item.quantity;
+          });
+          cartTotal.textContent = `₹${total.toFixed(2)}`;
+      }
+
+      function renderCart() {
+          cartItemsContainer.innerHTML = "";
+          if (window.cart.length === 0) {
+              cartItemsContainer.innerHTML = `
+                  <div class="text-center py-10">
+                      <i class="ri-shopping-cart-line ri-4x text-gray-400"></i>
+                      <p class="text-gray-600 mt-3">Your cart is empty.</p>
+                  </div>
+              `;
+          } else {
+              window.cart.forEach(item => {
+                  const itemElement = document.createElement("div");
+                  itemElement.className = "flex justify-between items-center mb-4";
+                  itemElement.innerHTML = `
+                      <div class="flex items-center gap-4">
+                          <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded" />
+                          <div>
+                              <h4 class="font-medium text-gray-800">${item.name}</h4>
+                              <p class="text-sm text-gray-600">₹${item.price.toFixed(2)} x ${item.quantity}</p>
+                          </div>
+                      </div>
+                      <button class="text-red-500 remove-btn" data-id="${item.id}">
+                          <i class="ri-delete-bin-line"></i>
+                      </button>
+                  `;
+                  cartItemsContainer.appendChild(itemElement);
+              });
+          }
+          updateCartDisplay();
+      }
+
+      function updateAddToCartButtons() {
+          document.querySelectorAll(".add-to-cart-btn").forEach(button => {
+              const productId = parseInt(button.dataset.id);
+              const isInCart = window.cart.some(item => item.id === productId); 
+
+              if (isInCart) {
+                  // Apply 'added' state styles: green background, white text, check icon, "Added" text
+                  button.classList.add("bg-secondary", "hover:bg-secondary/90");
+                  button.classList.remove("bg-primary", "hover:bg-blue-600");
+                  button.innerHTML = `
+                      <div class="w-4 h-4 flex items-center justify-center mr-1">
+                          <i class="ri-check-line"></i>
+                      </div>
+                      Added
+                  `;
+              } else {
+                  // Apply default state styles: primary background, white text, cart icon, "Add to Cart" text
+                  button.classList.remove("bg-secondary", "hover:bg-secondary/90");
+                  button.classList.add("bg-primary", "hover:bg-blue-600");
+                  button.innerHTML = `
+                      <div class="w-4 h-4 flex items-center justify-center mr-1">
+                          <i class="ri-shopping-cart-line"></i>
+                      </div>
+                      Add to Cart
+                  `;
+              }
+          });
+      }
+
+
+      // Wishlist Functions (now conditionally saves to Firebase)
+      async function toggleWishlist(productId) {
+          const productToToggle = allProducts.find(p => p.id === productId);
+          if (!productToToggle) return;
+
+          const existingItemIndex = window.wishlist.findIndex(item => item.id === productId);
+          if (existingItemIndex > -1) {
+              window.wishlist.splice(existingItemIndex, 1);
+              displayMessage("Product removed from liked list.", "info");
+          } else {
+              window.wishlist.push(productToToggle);
+              displayMessage("Product added to liked list.", "info");
+          }
+
+          const currentUser = window.myAppFirebase?.currentUser;
+          if (currentUser && !currentUser.isAnonymous) {
+              try {
+                  const userWishlistRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/wishlist`, "userWishlist");
+                  await window.myAppFirebase.setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
+              } catch (e) {
+                  console.error("Error writing wishlist to Firestore:", e);
+                  localStorage.setItem('wishlist', JSON.stringify(window.wishlist)); // Fallback to local storage
+                  displayMessage("Failed to sync liked list to cloud. Data saved locally.", "error");
+              }
+          } else {
+              localStorage.setItem('wishlist', JSON.stringify(window.wishlist));
+          }
+          updateWishlistDisplay();
+          updateWishlistIcons(); 
+      }
+
+      async function removeFromWishlist(productId) {
+          window.wishlist = window.wishlist.filter(item => item.id !== productId);
+          
+          const currentUser = window.myAppFirebase?.currentUser;
+          if (currentUser && !currentUser.isAnonymous) {
+              try {
+                  const userWishlistRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/wishlist`, "userWishlist");
+                  await window.myAppFirebase.setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
+                  displayMessage("Product removed from liked list (synced to cloud).", "info");
+              } catch (e) {
+                  console.error("Error removing item from Firestore wishlist:", e);
+                  localStorage.setItem('wishlist', JSON.stringify(window.wishlist)); // Fallback to local storage
+                  displayMessage("Failed to sync liked list removal to cloud. Data removed locally.", "error");
+              }
+          } else {
+              localStorage.setItem('wishlist', JSON.stringify(window.wishlist));
+              displayMessage("Product removed from liked list (removed locally).", "info");
+          }
+          updateWishlistDisplay();
+          renderWishlist(); 
+          updateWishlistIcons(); 
+      }
+
+      function updateWishlistDisplay() {
+          wishlistCount.textContent = window.wishlist.length;
+      }
+
+      function renderWishlist() {
+          wishlistItemsContainer.innerHTML = "";
+          if (window.wishlist.length === 0) {
+              wishlistItemsContainer.innerHTML = `
+                  <div class="text-center py-10">
+                      <i class="ri-heart-line ri-4x text-gray-400"></i>
+                      <p class="text-gray-600 mt-3">Your liked list is empty.</p>
+                  </div>
+              `;
+          } else {
+              window.wishlist.forEach(item => {
+                  const itemElement = document.createElement("div");
+                  itemElement.className = "flex justify-between items-center mb-4";
+                  itemElement.innerHTML = `
+                      <div class="flex items-center gap-4">
+                          <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded" />
+                          <div>
+                              <h4 class="font-medium text-gray-800">${item.name}</h4>
+                              <p class="text-sm text-gray-600">₹${item.price.toFixed(2)}</p>
+                          </div>
+                      </div>
+                      <div class="flex flex-col items-end space-y-2">
+                           <button class="bg-primary hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm add-to-cart-from-wishlist-btn" data-id="${item.id}">Add to Cart</button>
+                           <button class="text-red-500 remove-btn" data-id="${item.id}">
+                              <i class="ri-delete-bin-line"></i>
+                          </button>
+                      </div>
+                  `;
+                  wishlistItemsContainer.appendChild(itemElement);
+              });
+          }
+          updateWishlistDisplay();
+      }
+
+      function updateWishlistIcons() {
+          document.querySelectorAll(".wishlist-icon").forEach(button => {
+              const productId = parseInt(button.dataset.id);
+              const icon = button.querySelector("i");
+              if (window.wishlist.some(item => item.id === productId)) {
+                  icon.classList.remove("ri-heart-line");
+                  icon.classList.add("ri-heart-fill");
+                  button.classList.add("text-red-500");
+                  button.classList.remove("text-gray-400");
+              } else {
+                  icon.classList.remove("ri-heart-fill");
+                  icon.classList.add("ri-heart-line");
+                  button.classList.remove("text-red-500");
+                  button.classList.add("text-gray-400");
+              }
+          });
+      }
+
+      // Function to update the user UI (icon/initial)
+      function updateUserUI() {
+        // This function no longer attempts to show initials.
+        // It simply ensures the userRiIcon is visible and userInitialIcon is hidden.
+        userInitialIcon.classList.add("hidden"); // Ensure initials are always hidden
+        userRiIcon.classList.remove("hidden"); // Ensure generic icon is always visible
+        
+        // Ensure auth modal is hidden by default unless explicitly opened by user click
+        authModal.classList.add("hidden"); 
+      }
+
+
+      // Add click event listeners to category filters - moved here for scope
+      const filterButtons = document.querySelectorAll(".category-filter");
+      filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const category = button.getAttribute("data-category");
+
+          // Update button states
+          filterButtons.forEach((btn) => {
+            btn.classList.remove("bg-primary", "text-white");
+            btn.classList.add("bg-gray-100", "text-gray-700");
+          });
+          button.classList.remove("bg-gray-100", "text-gray-700");
+          button.classList.add("bg-primary", "text-white");
+          // Filter products
+          if (category === "all") {
+            currentProducts = [...allProducts];
+            activeFiltersDisplay.classList.add("hidden");
+            activeFilterTags.innerHTML = "";
+          } else {
+            currentProducts = allProducts.filter(
+              (product) => product.category === category,
+            );
+            activeFiltersDisplay.classList.remove("hidden");
+            activeFilterTags.innerHTML = `
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary/10 text-primary">
+              ${category}
+              <button class="ml-2 focus:outline-none" onclick="resetFilters()">
+                <i class="ri-close-line"></i>
+              </button>
+            </span>
+          `;
+          }
+          // Reset pagination and render
+          currentPage = 1;
+          renderProducts(currentProducts, currentPage);
+          renderPagination();
+        });
+      });
+    </script>
+
+    <!-- Firebase Module Script -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+      // Firebase variables (provided by Canvas environment)
+      const appId = typeof __app_id !== 'undefined' ? __app_id : '1:790485552725:web:945179dc1a87499df450edc'; // Ensure this matches your Firebase project's appId
+      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        apiKey: "AIzaSyD5lbOWoCV2020mjpP-z34AMqtn1jm1JPM", // Placeholder, ideally provided by environment
+        authDomain: "sri-eniyabattery.firebaseapp.com", // Placeholder, ideally provided by environment
+        projectId: "sri-eniyabattery", // Placeholder, ideally provided by environment
+        storageBucket: "sri-eniyabattery.appspot.com", // Placeholder, ideally provided by environment
+        messagingSenderId: "your-messaging-sender-id", // Placeholder, ideally provided by environment
+        appId: "1:790485552725:web:945179dc1a87499df450edc", // Ensure this matches your Firebase project's appId
+      };
+
+      let app;
+      let auth; 
+      let db;
+      let currentUser = null; 
+      let cartUnsubscribe = null;
+      let wishlistUnsubscribe = null;
+
+      // Define auth functions, these will now contain their own checks for 'auth'
+      const handleLogin = async function(email, password) {
+          const loginError = document.getElementById("loginError");
+          loginError.textContent = "";
+          if (!auth) {
+              console.error("Authentication object is not initialized. Cannot login.");
+              loginError.textContent = "Firebase is not ready. Please try again later.";
+              return;
+          }
+          try {
+              await signInWithEmailAndPassword(auth, email, password);
+              document.getElementById("authModal").classList.add("hidden");
+              window.displayMessage("Logged in successfully!", "info");
+          } catch (error) {
+              console.error("Login failed:", error);
+              let message = "Login failed. Please try again."; 
+              switch (error.code) {
+                  case 'auth/user-not-found':
+                  case 'auth/wrong-password':
+                      message = "Invalid email or password.";
+                      break;
+                  case 'auth/invalid-email':
+                      message = "Invalid email format.";
+                      break;
+                  case 'auth/user-disabled':
+                      message = "Your account has been disabled.";
+                      break;
+                  case 'auth/network-request-failed':
+                      message = "Network error. Please check your internet connection.";
+                      break;
+                  default:
+                      message = "Login failed. Please try again later.";
+              }
+              loginError.textContent = message;
+          }
+      };
+
+      const handleSignup = async function(email, password) {
+          const signupError = document.getElementById("signupError");
+          signupError.textContent = "";
+          if (!auth) {
+              console.error("Authentication object is not initialized. Cannot signup.");
+              signupError.textContent = "Firebase is not ready. Please try again later.";
+              return;
+          }
+          try {
+              await createUserWithEmailAndPassword(auth, email, password);
+              document.getElementById("authModal").classList.add("hidden");
+              window.displayMessage("Signed up successfully! You are now logged in.", "info");
+          } catch (error) {
+              console.error("Signup failed:", error);
+              let message = "Signup failed. Please try again."; 
+              switch (error.code) {
+                  case 'auth/email-already-in-use':
+                      message = "This email is already in use. Try logging in.";
+                      break;
+                  case 'auth/weak-password':
+                      message = "Password should be at least 6 characters.";
+                      break;
+                  case 'auth/invalid-email':
+                      message = "Invalid email format.";
+                      break;
+                  case 'auth/network-request-failed':
+                      message = "Network error. Please check your internet connection.";
+                      break;
+                  default:
+                      message = "Signup failed. Please try again later.";
+              }
+              signupError.textContent = message;
+          }
+      };
+
+      const handleLogout = async function() {
+          if (!auth) {
+              console.error("Authentication object is not initialized. Cannot logout.");
+              if (typeof window.displayMessage === 'function') {
+                  window.displayMessage("Firebase is not ready. Cannot log out.", "error");
+              }
+              return;
+          }
+          try {
+              // Before logging out, save current in-memory cart/wishlist to local storage
+              localStorage.setItem('cart', JSON.stringify(window.cart));
+              localStorage.setItem('wishlist', JSON.stringify(window.wishlist));
+              
+              await signOut(auth);
+              console.log("User logged out.");
+              window.displayMessage("Logged out successfully!", "info");
+              document.getElementById("authModal").classList.add("hidden"); // Hide the modal after logout
+              // onAuthStateChanged will handle UI updates and data sync
+          } catch (error) {
+              console.error("Error logging out:", error);
+              if (typeof window.displayMessage === 'function') {
+                window.displayMessage("Failed to log out. Please try again.", "error");
+              }
+          }
+      };
+
+      // Expose necessary Firebase instances and functions to the global window object
+      window.myAppFirebase = {
+        appId: appId,
+        currentUser: null, 
+        db: null, 
+        handleLogin: handleLogin, 
+        handleSignup: handleSignup, 
+        handleLogout: handleLogout, 
+        doc: doc, 
+        getDoc: getDoc, 
+        setDoc: setDoc, 
+        onSnapshot: onSnapshot 
+      };
+
+      document.addEventListener("DOMContentLoaded", async function () {
+        console.log("Firebase config:", firebaseConfig); 
+        // Only initialize Firebase if config seems valid
+        if (Object.keys(firebaseConfig).length > 0 && firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+          try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app); 
+            db = getFirestore(app);
+            window.myAppFirebase.db = db; // Set global db reference
+            console.log("Firebase Auth initialized:", auth); 
+            console.log("Firestore initialized:", db); 
+
+            onAuthStateChanged(auth, async (user) => {
+              const previousUser = currentUser;
+              currentUser = user; 
+              window.myAppFirebase.currentUser = user; 
+              
+              if (typeof window.updateUserUI === 'function') {
+                  window.updateUserUI(); // This will now always ensure the generic icon is shown.
+              }
+
+              if (user) {
+                console.log("User state changed. Current user:", user.uid, "Is Anonymous:", user.isAnonymous);
+                // Only sync data and set up listeners if user is authenticated (not anonymous)
+                // and if it's a new login or a change from anonymous to authenticated
+                if (!user.isAnonymous && (!previousUser || previousUser.isAnonymous)) {
+                    await syncUserDataFromFirestore(user.uid);
+                    setupFirestoreListeners(user.uid);
+                } else if (user.isAnonymous) {
+                    // If becomes anonymous, ensure local storage is used and listeners are off
+                    cleanupFirestoreListeners();
+                    if (window.cart) window.cart = JSON.parse(localStorage.getItem('cart')) || [];
+                    if (window.wishlist) window.wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+                }
+              } else {
+                console.log("User logged out.");
+                cleanupFirestoreListeners();
+                // When logged out, load data from local storage
+                if (window.cart) window.cart = JSON.parse(localStorage.getItem('cart')) || [];
+                if (window.wishlist) window.wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+              }
+
+              // Always update UI after any auth state change
+              if (typeof window.updateCartDisplay === 'function') window.updateCartDisplay();
+              if (typeof window.updateWishlistDisplay === 'function') window.updateWishlistDisplay();
+              if (typeof window.updateAddToCartButtons === 'function') window.updateAddToCartButtons();
+              if (typeof window.updateWishlistIcons === 'function') window.updateWishlistIcons();
+            });
+          } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            if (typeof window.displayMessage === 'function') {
+                window.displayMessage("Firebase setup failed. Cloud sync disabled.", "error");
+            }
+          }
+        } else {
+          console.warn("Firebase config not found or incomplete. Running in local storage only mode.");
+          if (typeof window.updateUserUI === 'function') {
+            window.updateUserUI(); 
+          }
+        }
+      });
+
+      async function syncUserDataFromFirestore(uid) {
+        if (!db) {
+            console.error("Firestore object is not initialized. Cannot sync user data.");
+            if (typeof window.displayMessage === 'function') {
+                window.displayMessage("Firebase Firestore is not ready. Data sync limited.", "error");
+            }
+            // Fallback to local storage if Firestore isn't ready
+            if (window.cart) window.cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (window.wishlist) window.wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            return;
+        }
+
+        const userCartRef = doc(db, `artifacts/${appId}/users/${uid}/cart`, "userCart");
+        const userWishlistRef = doc(db, `artifacts/${appId}/users/${uid}/wishlist`, "userWishlist");
+
+        try {
+          const cartDoc = await getDoc(userCartRef);
+          const wishlistDoc = await getDoc(userWishlistRef);
+
+          let firestoreCart = [];
+          if (cartDoc.exists() && cartDoc.data().items) {
+              try {
+                  firestoreCart = JSON.parse(cartDoc.data().items);
+              } catch (e) {
+                  console.error("Error parsing Firestore cart data:", e);
+              }
+          }
+
+          let firestoreWishlist = [];
+          if (wishlistDoc.exists() && wishlistDoc.data().items) {
+              try {
+                  firestoreWishlist = JSON.parse(wishlistDoc.data().items);
+              } catch (e) {
+                  console.error("Error parsing Firestore wishlist data:", e);
+              }
+          }
+
+          // Get local storage data before merging
+          const localCart = JSON.parse(localStorage.getItem('cart')) || [];
+          const localWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+          // Merge local cart into Firestore cart
+          localCart.forEach(localItem => {
+              const existing = firestoreCart.find(fsItem => fsItem.id === localItem.id);
+              if (existing) {
+                  existing.quantity += localItem.quantity;
+              } else {
+                  firestoreCart.push(localItem);
+              }
+          });
+
+          // Merge local wishlist into Firestore wishlist
+          localWishlist.forEach(localItem => {
+              if (!firestoreWishlist.some(fsItem => fsItem.id === localItem.id)) {
+                  firestoreWishlist.push(localItem);
+              }
+          });
+
+          // Update global state with merged data
+          if (window.cart) window.cart = firestoreCart;
+          if (window.wishlist) window.wishlist = firestoreWishlist;
+
+          // Save merged data back to Firestore
+          await setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
+          await setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
+          
+          // Clear local storage as data is now in Firestore
+          localStorage.removeItem('cart');
+          localStorage.removeItem('wishlist');
+
+          console.log("User data synced from local storage to Firestore.");
+          window.displayMessage("Your local data has been synced to your account.", "info");
+
+        } catch (e) {
+          console.error("Error syncing user data to Firestore:", e);
+          if (typeof window.displayMessage === 'function') {
+            window.displayMessage("Failed to sync your data to cloud. Using local data.", "error");
+          }
+          // If Firestore write fails, ensure local data is what's used
+          if (window.cart) window.cart = JSON.parse(localStorage.getItem('cart')) || [];
+          if (window.wishlist) window.wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        }
+
+        // Always update UI elements after sync attempt
+        if (typeof window.updateCartDisplay === 'function') window.updateCartDisplay();
+        if (typeof window.updateWishlistDisplay === 'function') window.updateWishlistDisplay();
+        if (typeof window.updateAddToCartButtons === 'function') window.updateAddToCartButtons();
+        if (typeof window.updateWishlistIcons === 'function') window.updateWishlistIcons();
+      }
+
+      function setupFirestoreListeners(uid) {
+        if (!db) {
+            console.error("Firestore object is not initialized. Cannot set up listeners.");
+            return;
+        }
+
+        const userCartRef = doc(db, `artifacts/${appId}/users/${uid}/cart`, "userCart");
+        const userWishlistRef = doc(db, `artifacts/${appId}/users/${uid}/wishlist`, "userWishlist");
+
+        cleanupFirestoreListeners(); // Ensure previous listeners are removed
+
+        cartUnsubscribe = onSnapshot(userCartRef, (docSnap) => {
+          if (docSnap.exists() && docSnap.data().items) {
+              try {
+                  if (window.cart) { // Check if window.cart is defined before assigning
+                    window.cart = JSON.parse(docSnap.data().items);
+                    console.log("Cart updated from Firestore via listener:", window.cart);
+                  }
+              } catch (e) {
+                  console.error("Error parsing Firestore cart data:", e);
+                  if (window.cart) window.cart = []; // Reset if parsing fails
+              }
+          } else {
+            if (window.cart) window.cart = []; // Reset if document doesn't exist or items are empty
+          }
+          if (typeof window.updateCartDisplay === 'function') window.updateCartDisplay();
+          if (typeof window.renderCart === 'function') window.renderCart();
+          if (typeof window.updateAddToCartButtons === 'function') window.updateAddToCartButtons();
+        }, (error) => {
+          console.error("Error listening to cart changes:", error);
+          if (typeof window.displayMessage === 'function') {
+            window.displayMessage("Real-time cart updates failed. Check console for details.", "error");
+          }
+        });
+
+        wishlistUnsubscribe = onSnapshot(userWishlistRef, (docSnap) => {
+          if (docSnap.exists() && docSnap.data().items) {
+              try {
+                  if (window.wishlist) { // Check if window.wishlist is defined before assigning
+                    window.wishlist = JSON.parse(docSnap.data().items);
+                    console.log("Wishlist updated from Firestore via listener:", window.wishlist);
+                  }
+              }
+              catch (e) {
+                  console.error("Error parsing wishlist snapshot from Firestore listener:", e);
+                  if (window.wishlist) window.wishlist = []; // Reset if parsing fails
+              }
+          } else {
+            if (window.wishlist) window.wishlist = []; // Reset if document doesn't exist or items are empty
+          }
+          if (typeof window.updateWishlistDisplay === 'function') window.updateWishlistDisplay();
+          if (typeof window.renderWishlist === 'function') window.renderWishlist();
+          if (typeof window.updateWishlistIcons === 'function') window.updateWishlistIcons();
+        }, (error) => {
+          console.error("Error listening to wishlist changes:", error);
+          if (typeof window.displayMessage === 'function') {
+            window.displayMessage("Real-time liked list updates failed. Check console for details.", "error");
+          }
+        });
+      }
+
+      function cleanupFirestoreListeners() {
+        if (cartUnsubscribe) {
+          cartUnsubscribe();
+          cartUnsubscribe = null;
+          console.log("Firestore cart listener unsubscribed.");
+        }
+        if (wishlistUnsubscribe) {
+          wishlistUnsubscribe();
+          wishlistUnsubscribe = null;
+          console.log("Firestore wishlist listener unsubscribed.");
+        }
+      }
+    </script>
+  </body>
+</html>
