@@ -261,9 +261,37 @@
             <!-- userInitialIcon is always hidden -->
             <div id="userInitialIcon" class="text-lg font-bold text-white bg-gray-700 rounded-full hidden w-8 h-8 flex items-center justify-center"></div>
           </a>
+          <!-- Mobile Menu Button -->
+          <div class="md:hidden w-10 h-10 flex items-center justify-center text-gray-700 cursor-pointer" id="mobile-menu-button">
+            <i class="ri-menu-line ri-lg"></i>
+          </div>
         </div>
       </div>
     </header>
+
+    <!-- Mobile Menu -->
+    <div
+      id="mobile-menu"
+      class="hidden md:hidden bg-white shadow-lg fixed top-20 w-full z-40"
+    >
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a href="index.html" class="text-gray-800 hover:text-primary font-medium py-2"
+          >Home</a
+        >
+        <a
+          href="product.html"
+          class="text-gray-800 hover:text-primary font-medium py-2"
+          >Products</a
+        >
+        
+        <a
+          href="contact.html"
+          class="text-gray-800 hover:text-primary font-medium py-2"
+          >Contact</a
+        >
+      </div>
+    </div>
+
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
       <!-- Category Filters -->
@@ -1710,7 +1738,7 @@
           price: 6190,
           description: "EXIDE STAR-STAR12V1375: MC AL PURE SINE: 42M WARRANTY",
           image:
-            "https://solar-world.in/cdn/shop/files/1701343543708_7524EB73CBE94E4A9F33D1C8516A3B46_1a3066a3-fc49-4c14-bda0-ebbe90181d17.jpg?v=1706873902&width=1946  ",
+            "https://solar-world.in/cdn/shop/files/1701343543708_7524EB73CBE94E4A9F33D1C8516A3B46_1a3066a3-fc49-4c14-bda0-ebbe90181d17.jpg?v=1706873902&width=1445 ",
           category: "EXIDE STAR",
           war: "42MON WARRANTY"
         },
@@ -2954,6 +2982,33 @@
       });
     </script>
 
+    <!-- Mobile Menu Script -->
+    <script id="mobile-menu-script">
+      document.addEventListener("DOMContentLoaded", function () {
+        const mobileMenuButton = document.getElementById("mobile-menu-button");
+        const mobileMenu = document.getElementById("mobile-menu");
+
+        // Ensure the elements exist before adding event listeners
+        if (mobileMenuButton && mobileMenu) {
+          mobileMenuButton.addEventListener("click", function () {
+            // Toggle the 'hidden' class to show/hide the mobile menu
+            mobileMenu.classList.toggle("hidden");
+            // Also, toggle 'flex' to ensure it displays correctly when not hidden
+            mobileMenu.classList.toggle("flex");
+          });
+        }
+
+        // Close mobile menu when clicking on any link inside it
+        const mobileLinks = mobileMenu.querySelectorAll("a");
+        mobileLinks.forEach((link) => {
+          link.addEventListener("click", function () {
+            mobileMenu.classList.add("hidden"); // Hide the mobile menu
+            mobileMenu.classList.remove("flex"); // Ensure flex is removed when hidden
+          });
+        });
+      });
+    </script>
+
     <!-- Firebase Module Script -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -2963,12 +3018,12 @@
       // Firebase variables (provided by Canvas environment)
       const appId = typeof __app_id !== 'undefined' ? __app_id : '1:790485552725:web:945179dc1a87499df450edc'; // Ensure this matches your Firebase project's appId
       const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-        apiKey: "AIzaSyB3qfM190DXIvs-enb5bzyq-khosDnf3uo", // <--- REPLACE THIS WITH YOUR ACTUAL API KEY
-        authDomain: "srieniyabatteries-c5b1f.firebase.com", // <--- REPLACE THIS
-        projectId: "srieniyabatteries-c5b1f", // <--- REPLACE THIS
-        storageBucket: "srieniyabatteries-c5b1f.appspot.com", // <--- REPLACE THIS
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // <--- REPLACE THIS
-        appId: "1:199261228107:web:978ea6e97e2dab264491ce" // <--- REPLACE THIS, should match the projectId's web app ID
+        apiKey: "AIzaSyD5lbOWoCV2020mjpP-z34AMqtn1jm1JPM", // Placeholder, ideally provided by environment
+        authDomain: "sri-eniyabattery.firebaseapp.com", // Placeholder, ideally provided by environment
+        projectId: "sri-eniyabattery", // Placeholder, ideally provided by environment
+        storageBucket: "sri-eniyabattery.appspot.com", // Placeholder, ideally provided by environment
+        messagingSenderId: "your-messaging-sender-id", // Placeholder, ideally provided by environment
+        appId: "1:790485552725:web:945179dc1a87499df450edc", // Ensure this matches your Firebase project's appId
       };
 
       let app;
