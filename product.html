@@ -4201,8 +4201,8 @@
           const amount = isCartCheckout ? window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2) : (currentProductForBuy ? currentProductForBuy.price.toFixed(2) : '0.00');
           const transactionNote = isCartCheckout ? `Payment for items in your ShopEase cart` : `Payment for ${currentProductForBuy ? currentProductForBuy.name : 'product'} from ShopEase`;
 
-          const myGPayId = 'your_gpay_id@upi'; // Replace with your actual GPay UPI ID
-          const myGPayName = 'Your Name'; // Replace with your name for GPay
+          const myGPayId = 'ushanatarajan1411-1@okicici'; // Replace with your actual GPay UPI ID
+          const myGPayName = 'Usha Natarajan'; // Replace with your name for GPay
 
           const gpayUri = `upi://pay?pa=${myGPayId}&pn=${encodeURIComponent(myGPayName)}&mc=0000&tid=TEST${Date.now()}&tr=TEST${Date.now()}&tn=${encodeURIComponent(transactionNote)}&am=${amount}&cu=INR`;
           
