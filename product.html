@@ -862,18 +862,20 @@
                 </div>
 
                 <div id="paymentButtons" class="flex justify-center mt-6">
-                    <button type="button" id="gpayButton" class="buy-now-button green-btn w-full">
+                    <button type="button" id="gpayButton" class="buy-now-button green-btn">
                         Pay with GPay <span id="gpayAmount">₹0.00</span>
                     </button>
-                    <button type="submit" id="codSubmitButton" class="buy-now-button primary-btn w-full hidden">
+                    <button type="submit" id="codSubmitButton" class="buy-now-button primary-btn hidden">
                         Submit Order (Cash on Delivery)
                     </button>
                 </div>
 
                 <!-- New button for manual payment confirmation -->
-                <button type="button" id="confirmPaidButton" class="buy-now-button primary-btn w-full hidden mt-4">
-                    I have Paid / Confirm Order
-                </button>
+                <div class="flex justify-center mt-4">
+                    <button type="button" id="confirmPaidButton" class="buy-now-button primary-btn hidden">
+                        I have Paid / Confirm Order
+                    </button>
+                </div>
 
             </form>
 
@@ -884,9 +886,11 @@
                 </div>
                 <h3 class="text-xl font-semibold text-gray-800 mb-2">Order Confirmed!</h3>
                 <p class="text-gray-600 mb-6" id="confirmationMessage">Your order details have been recorded.</p>
-                <button id="closeConfirmation" class="buy-now-button primary-btn mt-6">
-                    Continue Shopping
-                </button>
+                <div class="flex justify-center mt-6"> <!-- Added flex justify-center here -->
+                    <button id="closeConfirmation" class="buy-now-button primary-btn">
+                        Continue Shopping
+                    </button>
+                </div>
             </div>
             <!-- Payment Failed/Cancelled Screen -->
             <div id="paymentFailed" class="text-center py-8 hidden">
@@ -895,9 +899,11 @@
                 </div>
                 <h3 class="text-xl font-semibold text-gray-800 mb-2">Order Cancelled / Payment Failed</h3>
                 <p class="text-gray-600 mb-6" id="failureMessage">Your payment could not be confirmed. Please try again.</p>
-                <button id="closeFailure" class="buy-now-button primary-btn mt-6">
-                    Try Again
-                </button>
+                <div class="flex justify-center mt-6"> <!-- Added flex justify-center here -->
+                    <button id="closeFailure" class="buy-now-button primary-btn">
+                        Try Again
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -4208,8 +4214,8 @@
           const amount = isCartCheckout ? window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2) : (currentProductForBuy ? currentProductForBuy.price.toFixed(2) : '0.00');
           const transactionNote = isCartCheckout ? `Payment for items in your ShopEase cart` : `Payment for ${currentProductForBuy ? currentProductForBuy.name : 'product'} from ShopEase`;
 
-          const myGPayId = 'ushanatarajan1411-1@okicici'; // Replaced with your actual GPay UPI ID
-          const myGPayName = 'Usha Natarajan'; // Replaced with your name for GPay
+          const myGPayId = 'muthu19909-2@okaxis'; // Replaced with your actual GPay UPI ID
+          const myGPayName = 'ESAKKI MUTHU'; // Replaced with your name for GPay
 
           const gpayUri = `upi://pay?pa=${myGPayId}&pn=${encodeURIComponent(myGPayName)}&mc=0000&tid=TEST${Date.now()}&tr=TEST${Date.now()}&tn=${encodeURIComponent(transactionNote)}&am=${amount}&cu=INR`;
           
@@ -4258,30 +4264,45 @@
           buyNowForm.classList.add('hidden');
           
           const orderId = `ORDER-${Date.now()}`;
-          let orderData;
-
-          const amount = isCartCheckout ? window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) : (currentProductForBuy ? currentProductForBuy.price : 0);
           const selectedPaymentOption = document.querySelector('input[name="paymentOption"]:checked').value;
 
+          let totalAmountValue;
           if (isCartCheckout) {
-              orderData = {
-                  customerName: buyName.value,
-                  customerPhone: buyPhone.value,
-                  customerEmail: buyEmail.value,
-                  deliveryAddress: buyAddress.value,
-                  orderId: orderId,
-                  products: window.cart.map(item => ({
-                      id: item.id,
-                      name: item.name,
-                      price: item.price,
-                      quantity: item.quantity,
-                      image: item.image
-                  })),
-                  totalAmount: parseFloat(amount),
-                  paymentOption: selectedPaymentOption, // Use selected option
-                  gpayUsername: selectedPaymentOption === 'gpay' ? gpayUsername.value : undefined, // Conditionally add GPay username
-                  timestamp: new Date().toISOString()
-              };
+              totalAmountValue = window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          } else {
+              totalAmountValue = currentProductForBuy ? currentProductForBuy.price : 0;
+          }
+
+          let orderData = {
+              customerName: buyName.value,
+              customerPhone: buyPhone.value,
+              customerEmail: buyEmail.value || null, // Ensure email is null if empty
+              deliveryAddress: buyAddress.value,
+              orderId: orderId,
+              totalAmount: parseFloat(totalAmountValue), // Ensure totalAmount is always set
+              paymentOption: selectedPaymentOption,
+              timestamp: new Date().toISOString()
+          };
+
+          if (selectedPaymentOption === 'gpay') {
+              // Get the trimmed value; if the element is null or value is undefined/null, default to empty string.
+              const gpayUserVal = (gpayUsername && gpayUsername.value !== undefined && gpayUsername.value !== null) ? gpayUsername.value.trim() : '';
+              
+              // Assign the value. If it's an empty string, it will be saved as null.
+              orderData.gpayUsername = gpayUserVal === '' ? null : gpayUserVal;
+          } else {
+              // If paymentOption is not 'gpay', explicitly set gpayUsername to null
+              orderData.gpayUsername = null;
+          }
+
+          if (isCartCheckout) {
+              orderData.products = window.cart.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  quantity: item.quantity,
+                  image: item.image
+              }));
               // Clear cart after successful checkout
               window.cart = [];
               const currentUser = window.myAppFirebase?.currentUser;
@@ -4291,18 +4312,8 @@
               localStorage.removeItem('cart');
               window.updateCartDisplay();
           } else {
-              orderData = {
-                  customerName: buyName.value,
-                  customerPhone: buyPhone.value,
-                  customerEmail: buyEmail.value,
-                  deliveryAddress: buyAddress.value,
-                  orderId: orderId,
-                  productName: currentProductForBuy.name,
-                  productPrice: currentProductForBuy.price,
-                  paymentOption: selectedPaymentOption, // Use selected option
-                  gpayUsername: selectedPaymentOption === 'gpay' ? gpayUsername.value : undefined, // Conditionally add GPay username
-                  timestamp: new Date().toISOString()
-              };
+              orderData.productName = currentProductForBuy.name;
+              orderData.productPrice = currentProductForBuy.price;
           }
 
           try {
@@ -4351,29 +4362,45 @@
           paymentFailed.classList.add('hidden'); // Ensure failure is hidden
           
           const orderId = `ORDER-${Date.now()}`; // Unique ID for COD orders
-          let orderData;
           const selectedPaymentOption = document.querySelector('input[name="paymentOption"]:checked').value;
 
+          let totalAmountValue;
+          if (isCartCheckout) {
+              totalAmountValue = window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          } else {
+              totalAmountValue = currentProductForBuy ? currentProductForBuy.price : 0;
+          }
+
+          let orderData = {
+              customerName: buyName.value,
+              customerPhone: buyPhone.value,
+              customerEmail: buyEmail.value || null, // Ensure email is null if empty
+              deliveryAddress: buyAddress.value,
+              orderId: orderId,
+              totalAmount: parseFloat(totalAmountValue), // Ensure totalAmount is always set
+              paymentOption: selectedPaymentOption,
+              timestamp: new Date().toISOString()
+          };
+
+          if (selectedPaymentOption === 'gpay') {
+              // Get the trimmed value; if the element is null or value is undefined/null, default to empty string.
+              const gpayUserVal = (gpayUsername && gpayUsername.value !== undefined && gpayUsername.value !== null) ? gpayUsername.value.trim() : '';
+              
+              // Assign the value. If it's an empty string, it will be saved as null.
+              orderData.gpayUsername = gpayUserVal === '' ? null : gpayUserVal;
+          } else {
+              // If paymentOption is not 'gpay', explicitly set gpayUsername to null
+              orderData.gpayUsername = null;
+          }
 
           if (isCartCheckout) {
-              orderData = {
-                  customerName: buyName.value,
-                  customerPhone: buyPhone.value,
-                  customerEmail: buyEmail.value, 
-                  deliveryAddress: buyAddress.value,
-                  orderId: orderId,
-                  products: window.cart.map(item => ({ 
-                      id: item.id,
-                      name: item.name,
-                      price: item.price,
-                      quantity: item.quantity,
-                      image: item.image 
-                  })),
-                  totalAmount: window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-                  paymentOption: selectedPaymentOption, // Use selected option
-                  gpayUsername: selectedPaymentOption === 'gpay' ? gpayUsername.value : undefined, // Conditionally add GPay username
-                  timestamp: new Date().toISOString()
-              };
+              orderData.products = window.cart.map(item => ({ 
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  quantity: item.quantity,
+                  image: item.image 
+              }));
               // Clear cart after successful checkout
               window.cart = [];
               const currentUser = window.myAppFirebase?.currentUser;
@@ -4383,18 +4410,8 @@
               localStorage.removeItem('cart'); // Clear local storage too
               window.updateCartDisplay(); // Update cart count in header
           } else {
-              orderData = {
-                  customerName: buyName.value,
-                  customerPhone: buyPhone.value,
-                  customerEmail: buyEmail.value,
-                  deliveryAddress: buyAddress.value,
-                  orderId: orderId,
-                  productName: currentProductForBuy.name,
-                  productPrice: currentProductForBuy.price,
-                  paymentOption: selectedPaymentOption, // Use selected option
-                  gpayUsername: selectedPaymentOption === 'gpay' ? gpayUsername.value : undefined, // Conditionally add GPay username
-                  timestamp: new Date().toISOString()
-              };
+              orderData.productName = currentProductForBuy.name;
+              orderData.productPrice = currentProductForBuy.price;
           }
 
           try {
