@@ -2268,7 +2268,7 @@
       // --- Email Sending via EmailJS ---
       // IMPORTANT: Initialize EmailJS with your Public Key (User ID)
       // Replace 'YOUR_EMAILJS_PUBLIC_KEY' with the actual Public Key from your EmailJS account dashboard.
-      emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // <<< REPLACE THIS!
+      emailjs.init("LLS3u2rOQD_oS8q5-"); // <<< REPLACE THIS!
 
       async function sendOrderConfirmationEmail(orderDetails) {
           // Check if customer email is provided
@@ -2280,7 +2280,7 @@
 
           // A simple check to ensure the placeholder is replaced.
           // This doesn't validate the key's correctness, only that it's not the default string.
-          if (emailjs.init.toString().includes("YOUR_EMAILJS_PUBLIC_KEY")) {
+          if (emailjs.init.toString().includes("LLS3u2rOQD_oS8q5-")) {
               console.error("EmailJS Public Key is still a placeholder. Email will not be sent.");
               displayMessage("Email sending failed: EmailJS Public Key is not set. Please update 'emailjs.init()' in pro.html.", "error", 15000);
               return;
@@ -2326,8 +2326,8 @@
 
           // IMPORTANT: Replace 'YOUR_EMAILJS_SERVICE_ID' and 'YOUR_EMAILJS_TEMPLATE_ID'
           // with the actual IDs you copied from your EmailJS dashboard.
-          const serviceID = 'YOUR_EMAILJS_SERVICE_ID';   // <<< REPLACE THIS!
-          const templateID = 'YOUR_EMAILJS_TEMPLATE_ID'; // <<< REPLACE THIS!
+          const serviceID = 'service_78jdkxo';   // <<< REPLACE THIS!
+          const templateID = 'template_n6jtah2'; // <<< REPLACE THIS!
 
           try {
               // Send the email using EmailJS
