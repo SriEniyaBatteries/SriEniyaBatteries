@@ -297,7 +297,11 @@
         <!-- Updated logo image with direct placeholder URL -->
         <img src="https://placehold.co/100x40/e0e0e0/505050?text=Logo" alt="PowerCell Logo" class="h-10 sm:h-12 md:h-14 object-contain" style="padding-right:40px">
         <!-- Diagnostic SVG - This should always show if the browser can render SVGs -->
-        
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="ml-2">
+            <circle cx="12" cy="12" r="10" fill="#FFD700"/>
+            <path d="M9 10L15 10" stroke="#333333" stroke-width="2" stroke-linecap="round"/>
+            <path d="M9 14L15 14" stroke="#333333" stroke-width="2" stroke-linecap="round"/>
+        </svg>
         <div class="relative w-full max-w-xl mx-4">
           <div
             class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
@@ -921,7 +925,7 @@
       const allProducts = [
         {
           id: 1,
-          name: "EXIDE EPIQ-EPIQ35L/R ",
+          name: "AXIDE EPIQ-EPIQ35L/R ",
           price: 5071,
           description:
             "CAR/SUV: EXIDE EPIQ: 77M WARRANTY : 42F+35P",
@@ -1377,10 +1381,10 @@
           }
           buyNowError.classList.add('hidden'); // Hide error if validation passes
 
-          // Check if Firebase Firestore is initialized
-          if (!window.myAppFirebase.db) {
-              displayMessage("Firebase is not ready. Please try again later.", "error");
-              console.error("Firestore object is not initialized. Cannot save order.");
+          // Check if Firebase Firestore is initialized and authenticated
+          if (!window.myAppFirebase.db || !window.myAppFirebase.isAuthReady || !window.myAppFirebase.currentUser) {
+              displayMessage("Please wait for authentication to complete or log in.", "error", 5000);
+              console.error("Firebase not ready or user not authenticated. Cannot save order.");
               return;
           }
 
@@ -1460,11 +1464,10 @@
 
           try {
               const currentUser = window.myAppFirebase?.currentUser;
-              if (!currentUser) {
-                  console.error("No user authenticated. Cannot save order to a user-specific path.");
-                  displayMessage("Order cannot be linked to an account. Please log in.", "error");
-                  // You might want to handle this case differently, e.g., save to a public 'guest_orders' collection
-                  // For now, it will fail if rules require auth.
+              // Add this critical check:
+              if (!currentUser || !window.myAppFirebase.isAuthReady) {
+                  console.error("No user authenticated or auth not ready. Cannot save order to a user-specific path.");
+                  displayMessage("Authentication not ready. Please wait or log in.", "error");
                   throw new Error("User not authenticated for order saving.");
               }
               // Save order to user-specific path
@@ -1506,10 +1509,10 @@
           }
           buyNowError.classList.add('hidden'); // Hide error if validation passes
 
-          // Check if Firebase Firestore is initialized
-          if (!window.myAppFirebase.db) {
-              displayMessage("Firebase is not ready. Please try again later.", "error");
-              console.error("Firestore object is not initialized. Cannot save order.");
+          // Check if Firebase Firestore is initialized and authenticated
+          if (!window.myAppFirebase.db || !window.myAppFirebase.isAuthReady || !window.myAppFirebase.currentUser) {
+              displayMessage("Please wait for authentication to complete or log in.", "error", 5000);
+              console.error("Firebase not ready or user not authenticated. Cannot save order.");
               return;
           }
 
@@ -1574,9 +1577,10 @@
 
           try {
               const currentUser = window.myAppFirebase?.currentUser;
-              if (!currentUser) {
-                  console.error("No user authenticated. Cannot save order to a user-specific path.");
-                  displayMessage("Order cannot be linked to an account. Please log in.", "error");
+              // Add this critical check:
+              if (!currentUser || !window.myAppFirebase.isAuthReady) {
+                  console.error("No user authenticated or auth not ready. Cannot save order to a user-specific path.");
+                  displayMessage("Authentication not ready. Please wait or log in.", "error");
                   throw new Error("User not authenticated for order saving.");
               }
               // Save order to user-specific path
@@ -1933,7 +1937,8 @@
           }
 
           const currentUser = window.myAppFirebase?.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          // Only attempt Firestore write if auth is ready and user is not anonymous (for cloud sync)
+          if (currentUser && !currentUser.isAnonymous && window.myAppFirebase.isAuthReady) {
               try {
                   const userCartRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/cart`, "userCart");
                   await window.myAppFirebase.setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
@@ -1955,7 +1960,8 @@
           window.cart = window.cart.filter(item => item.id !== productId);
 
           const currentUser = window.myAppFirebase?.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          // Only attempt Firestore write if auth is ready and user is not anonymous (for cloud sync)
+          if (currentUser && !currentUser.isAnonymous && window.myAppFirebase.isAuthReady) {
               try {
                   const userCartRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/cart`, "userCart");
                   await window.myAppFirebase.setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
@@ -2059,7 +2065,8 @@
           }
 
           const currentUser = window.myAppFirebase?.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          // Only attempt Firestore write if auth is ready and user is not anonymous (for cloud sync)
+          if (currentUser && !currentUser.isAnonymous && window.myAppFirebase.isAuthReady) {
               try {
                   const userWishlistRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/wishlist`, "userWishlist");
                   await window.myAppFirebase.setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
@@ -2079,7 +2086,8 @@
           window.wishlist = window.wishlist.filter(item => item.id !== productId);
 
           const currentUser = window.myAppFirebase?.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          // Only attempt Firestore write if auth is ready and user is not anonymous (for cloud sync)
+          if (currentUser && !currentUser.isAnonymous && window.myAppFirebase.isAuthReady) {
               try {
                   const userWishlistRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/wishlist`, "userWishlist");
                   await window.myAppFirebase.setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
@@ -2380,7 +2388,7 @@
     <!-- Firebase Module Script -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
       import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // Added collection and addDoc
 
       // Firebase variables (provided by Canvas environment)
@@ -2398,6 +2406,8 @@
 
       // Use the __app_id global variable if available, otherwise fallback to a default for local testing.
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+      // Use the __initial_auth_token global variable if available
+      const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
       let app;
       let auth;
@@ -2405,6 +2415,7 @@
       let currentUser = null;
       let cartUnsubscribe = null;
       let wishlistUnsubscribe = null;
+      let isAuthReady = false; // New flag to indicate Firebase Auth is fully initialized and state confirmed
 
       // Define auth functions, these will now contain their own checks for 'auth'
       const handleLogin = async function(email, password) {
@@ -2517,7 +2528,8 @@
         setDoc: setDoc,
         onSnapshot: onSnapshot,
         collection: collection,
-        addDoc: addDoc
+        addDoc: addDoc,
+        isAuthReady: false // Expose the auth ready flag
       };
 
       document.addEventListener("DOMContentLoaded", async function () {
@@ -2534,10 +2546,21 @@
             console.log("Firebase Auth initialized:", auth);
             console.log("Firestore initialized:", db); // Check if db is a valid object here
 
+            // CRITICAL: Sign in immediately using custom token or anonymously
+            if (initialAuthToken) {
+                console.log("Signing in with custom token...");
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                console.log("Signing in anonymously...");
+                await signInAnonymously(auth);
+            }
+
+            // Now set up the auth state listener
             onAuthStateChanged(auth, async (user) => {
               const previousUser = currentUser;
               currentUser = user;
               window.myAppFirebase.currentUser = user;
+              window.myAppFirebase.isAuthReady = true; // Auth state is now confirmed and ready
 
               if (typeof window.updateUserUI === 'function') {
                   window.updateUserUI(); // This will now always ensure the generic icon is shown.
@@ -2571,10 +2594,11 @@
               if (typeof window.updateWishlistIcons === 'function') window.updateWishlistIcons();
             });
           } catch (error) {
-            console.error("Firebase initialization failed:", error);
+            console.error("Firebase initialization or initial sign-in failed:", error);
             if (typeof window.displayMessage === 'function') {
                 window.displayMessage("Firebase setup failed. Cloud sync disabled. Check console for details.", "error");
             }
+            window.myAppFirebase.isAuthReady = true; // Still set to true to allow local storage fallback
           }
         } else {
           console.error("Firebase config is missing or incomplete. Please provide valid config.");
@@ -2587,13 +2611,14 @@
           if (typeof window.updateUserUI === 'function') {
             window.updateUserUI();
           }
+          window.myAppFirebase.isAuthReady = true; // Set to true to allow local storage operations
         }
       });
 
       async function syncUserDataFromFirestore(uid) {
-        // Ensure db is valid before proceeding
-        if (!window.myAppFirebase.db) {
-            console.error("Firestore object is not initialized for sync. Skipping data sync.");
+        // Ensure db is valid and auth is ready before proceeding
+        if (!window.myAppFirebase.db || !window.myAppFirebase.isAuthReady) {
+            console.error("Firestore object is not initialized or auth not ready for sync. Skipping data sync.");
             if (typeof window.displayMessage === 'function') {
                 window.displayMessage("Firebase Firestore is not ready. Data sync limited.", "error");
             }
@@ -2683,9 +2708,9 @@
       }
 
       function setupFirestoreListeners(uid) {
-        // Ensure db is valid before proceeding
-        if (!window.myAppFirebase.db) {
-            console.error("Firestore object is not initialized for listeners. Skipping listener setup.");
+        // Ensure db is valid and auth is ready before proceeding
+        if (!window.myAppFirebase.db || !window.myAppFirebase.isAuthReady) {
+            console.error("Firestore object is not initialized or auth not ready for listeners. Skipping listener setup.");
             return;
         }
 
