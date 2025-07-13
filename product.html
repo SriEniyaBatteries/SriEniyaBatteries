@@ -925,7 +925,7 @@
       const allProducts = [
         {
           id: 1,
-          name: "AXIDE EPIQ-EPIQ35L/R ",
+          name: "XIDE EPIQ-EPIQ35L/R ",
           price: 5071,
           description:
             "CAR/SUV: EXIDE EPIQ: 77M WARRANTY : 42F+35P",
@@ -1381,10 +1381,10 @@
           }
           buyNowError.classList.add('hidden'); // Hide error if validation passes
 
-          // Check if Firebase Firestore is initialized and authenticated
-          if (!window.myAppFirebase.db || !window.myAppFirebase.isAuthReady || !window.myAppFirebase.currentUser) {
-              displayMessage("Please wait for authentication to complete or log in.", "error", 5000);
-              console.error("Firebase not ready or user not authenticated. Cannot save order.");
+          // Check if Firebase Firestore is initialized
+          if (!window.myAppFirebase.db) {
+              displayMessage("Firebase is not ready. Please try again later.", "error");
+              console.error("Firestore object is not initialized. Cannot save order.");
               return;
           }
 
@@ -1464,10 +1464,11 @@
 
           try {
               const currentUser = window.myAppFirebase?.currentUser;
-              // Add this critical check:
-              if (!currentUser || !window.myAppFirebase.isAuthReady) {
-                  console.error("No user authenticated or auth not ready. Cannot save order to a user-specific path.");
-                  displayMessage("Authentication not ready. Please wait or log in.", "error");
+              if (!currentUser) {
+                  console.error("No user authenticated. Cannot save order to a user-specific path.");
+                  displayMessage("Order cannot be linked to an account. Please log in.", "error");
+                  // You might want to handle this case differently, e.g., save to a public 'guest_orders' collection
+                  // For now, it will fail if rules require auth.
                   throw new Error("User not authenticated for order saving.");
               }
               // Save order to user-specific path
@@ -1509,10 +1510,10 @@
           }
           buyNowError.classList.add('hidden'); // Hide error if validation passes
 
-          // Check if Firebase Firestore is initialized and authenticated
-          if (!window.myAppFirebase.db || !window.myAppFirebase.isAuthReady || !window.myAppFirebase.currentUser) {
-              displayMessage("Please wait for authentication to complete or log in.", "error", 5000);
-              console.error("Firebase not ready or user not authenticated. Cannot save order.");
+          // Check if Firebase Firestore is initialized
+          if (!window.myAppFirebase.db) {
+              displayMessage("Firebase is not ready. Please try again later.", "error");
+              console.error("Firestore object is not initialized. Cannot save order.");
               return;
           }
 
@@ -1577,10 +1578,9 @@
 
           try {
               const currentUser = window.myAppFirebase?.currentUser;
-              // Add this critical check:
-              if (!currentUser || !window.myAppFirebase.isAuthReady) {
-                  console.error("No user authenticated or auth not ready. Cannot save order to a user-specific path.");
-                  displayMessage("Authentication not ready. Please wait or log in.", "error");
+              if (!currentUser) {
+                  console.error("No user authenticated. Cannot save order to a user-specific path.");
+                  displayMessage("Order cannot be linked to an account. Please log in.", "error");
                   throw new Error("User not authenticated for order saving.");
               }
               // Save order to user-specific path
@@ -1937,8 +1937,7 @@
           }
 
           const currentUser = window.myAppFirebase?.currentUser;
-          // Only attempt Firestore write if auth is ready and user is not anonymous (for cloud sync)
-          if (currentUser && !currentUser.isAnonymous && window.myAppFirebase.isAuthReady) {
+          if (currentUser && !currentUser.isAnonymous) {
               try {
                   const userCartRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/cart`, "userCart");
                   await window.myAppFirebase.setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
@@ -1960,8 +1959,7 @@
           window.cart = window.cart.filter(item => item.id !== productId);
 
           const currentUser = window.myAppFirebase?.currentUser;
-          // Only attempt Firestore write if auth is ready and user is not anonymous (for cloud sync)
-          if (currentUser && !currentUser.isAnonymous && window.myAppFirebase.isAuthReady) {
+          if (currentUser && !currentUser.isAnonymous) {
               try {
                   const userCartRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/cart`, "userCart");
                   await window.myAppFirebase.setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
@@ -2065,8 +2063,7 @@
           }
 
           const currentUser = window.myAppFirebase?.currentUser;
-          // Only attempt Firestore write if auth is ready and user is not anonymous (for cloud sync)
-          if (currentUser && !currentUser.isAnonymous && window.myAppFirebase.isAuthReady) {
+          if (currentUser && !currentUser.isAnonymous) {
               try {
                   const userWishlistRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/wishlist`, "userWishlist");
                   await window.myAppFirebase.setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
@@ -2086,8 +2083,7 @@
           window.wishlist = window.wishlist.filter(item => item.id !== productId);
 
           const currentUser = window.myAppFirebase?.currentUser;
-          // Only attempt Firestore write if auth is ready and user is not anonymous (for cloud sync)
-          if (currentUser && !currentUser.isAnonymous && window.myAppFirebase.isAuthReady) {
+          if (currentUser && !currentUser.isAnonymous) {
               try {
                   const userWishlistRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/wishlist`, "userWishlist");
                   await window.myAppFirebase.setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
@@ -2193,7 +2189,7 @@
           // Set GPay as default selected option and show its elements
           document.querySelector('input[name="paymentOption"][value="gpay"]').checked = true;
           gpayButton.classList.remove('hidden'); // Show GPay button
-          codSubmitButton.classList.add('hidden');
+          codSubmitButton.classList.add('hidden'); // Hide COD button
           confirmPaidButton.classList.add('hidden'); // Hide confirm paid button
           gpayQrCodeContainer.classList.remove('hidden'); // Show QR code container
           gpayUsernameInputContainer.classList.remove('hidden'); // Show GPay username input
@@ -2220,7 +2216,7 @@
 
           document.querySelector('input[name="paymentOption"][value="gpay"]').checked = true;
           gpayButton.classList.remove('hidden'); // Show GPay button
-          codSubmitButton.classList.add('hidden');
+          codSubmitButton.classList.add('hidden'); // Hide COD button
           confirmPaidButton.classList.add('hidden'); // Hide confirm paid button
           gpayQrCodeContainer.classList.remove('hidden'); // Show QR code container
           gpayUsernameInputContainer.classList.remove('hidden'); // Show GPay username input
@@ -2275,8 +2271,8 @@
 
       // --- Email Sending via EmailJS ---
       // IMPORTANT: Initialize EmailJS with your Public Key (User ID)
-      // Replace 'YOUR_EMAILJS_PUBLIC_KEY' with the actual Public Key from your EmailJS account dashboard.
-      emailjs.init("LLS3u2rOQD_oS8q5-"); // <<< REPLACE THIS!
+      // You can find this in your EmailJS account dashboard under "Email Services" -> "API Keys"
+      emailjs.init("LLS3u2rOQD_oS8q5-"); // <<< REPLACE THIS LINE!
 
       async function sendOrderConfirmationEmail(orderDetails) {
           // Check if customer email is provided
@@ -2305,16 +2301,14 @@
               itemsForTemplate = orderDetails.products.map(item => ({
                   name: item.name,
                   price: item.price.toFixed(2), // Format price for display
-                  qty: item.quantity, // Changed from quantity to qty to match template
-                  image: item.image // <<< ADDED THIS LINE
+                  qty: item.quantity // Changed from quantity to qty to match template
               }));
           } else if (currentProductForBuy) {
               // For single product purchase
               itemsForTemplate.push({
                   name: currentProductForBuy.name,
                   price: currentProductForBuy.price.toFixed(2),
-                  qty: 1,
-                  image: currentProductForBuy.image // <<< ADDED THIS LINE
+                  qty: 1
               });
           }
 
@@ -2333,9 +2327,9 @@
           };
 
           // IMPORTANT: Replace 'YOUR_EMAILJS_SERVICE_ID' and 'YOUR_EMAILJS_TEMPLATE_ID'
-          // with the actual IDs you copied from your EmailJS dashboard.
-          const serviceID = 'service_78jdkxo';   // <<< REPLACE THIS!
-          const templateID = 'template_n6jtah2'; // <<< REPLACE THIS!
+          // You can find these in your EmailJS account dashboard under "Email Services" and "Email Templates" respectively.
+          const serviceID = 'service_78jdkxo';   // <<< REPLACE THIS LINE!
+          const templateID = 'template_n6jtah2'; // <<< REPLACE THIS LINE!
 
           try {
               // Send the email using EmailJS
@@ -2388,12 +2382,11 @@
     <!-- Firebase Module Script -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
       import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // Added collection and addDoc
 
       // Firebase variables (provided by Canvas environment)
-      // IMPORTANT: The __app_id variable is provided by the Canvas environment.
-      // Do NOT use firebaseConfig.appId for Firestore paths in Canvas.
+      // IMPORTANT: Replace these with your ACTUAL Firebase project configuration!
       const firebaseConfig = {
          apiKey: "AIzaSyB3qfM190DXIvs-enb5bzyq-khosDnf3uo",
          authDomain: "srieniyabatteries-c5b1f.firebaseapp.com",
@@ -2404,10 +2397,7 @@
          measurementId: "G-7R184ZWB7Z"
       };
 
-      // Use the __app_id global variable if available, otherwise fallback to a default for local testing.
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      // Use the __initial_auth_token global variable if available
-      const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+      const appId = firebaseConfig.appId; // Use the appId from the config directly
 
       let app;
       let auth;
@@ -2415,7 +2405,6 @@
       let currentUser = null;
       let cartUnsubscribe = null;
       let wishlistUnsubscribe = null;
-      let isAuthReady = false; // New flag to indicate Firebase Auth is fully initialized and state confirmed
 
       // Define auth functions, these will now contain their own checks for 'auth'
       const handleLogin = async function(email, password) {
@@ -2517,7 +2506,7 @@
 
       // Expose necessary Firebase instances and functions to the global window object
       window.myAppFirebase = {
-        appId: appId, // Now uses the correct appId (either __app_id or fallback)
+        appId: appId,
         currentUser: null,
         db: null,
         handleLogin: handleLogin,
@@ -2528,8 +2517,7 @@
         setDoc: setDoc,
         onSnapshot: onSnapshot,
         collection: collection,
-        addDoc: addDoc,
-        isAuthReady: false // Expose the auth ready flag
+        addDoc: addDoc
       };
 
       document.addEventListener("DOMContentLoaded", async function () {
@@ -2546,21 +2534,10 @@
             console.log("Firebase Auth initialized:", auth);
             console.log("Firestore initialized:", db); // Check if db is a valid object here
 
-            // CRITICAL: Sign in immediately using custom token or anonymously
-            if (initialAuthToken) {
-                console.log("Signing in with custom token...");
-                await signInWithCustomToken(auth, initialAuthToken);
-            } else {
-                console.log("Signing in anonymously...");
-                await signInAnonymously(auth);
-            }
-
-            // Now set up the auth state listener
             onAuthStateChanged(auth, async (user) => {
               const previousUser = currentUser;
               currentUser = user;
               window.myAppFirebase.currentUser = user;
-              window.myAppFirebase.isAuthReady = true; // Auth state is now confirmed and ready
 
               if (typeof window.updateUserUI === 'function') {
                   window.updateUserUI(); // This will now always ensure the generic icon is shown.
@@ -2594,11 +2571,10 @@
               if (typeof window.updateWishlistIcons === 'function') window.updateWishlistIcons();
             });
           } catch (error) {
-            console.error("Firebase initialization or initial sign-in failed:", error);
+            console.error("Firebase initialization failed:", error);
             if (typeof window.displayMessage === 'function') {
                 window.displayMessage("Firebase setup failed. Cloud sync disabled. Check console for details.", "error");
             }
-            window.myAppFirebase.isAuthReady = true; // Still set to true to allow local storage fallback
           }
         } else {
           console.error("Firebase config is missing or incomplete. Please provide valid config.");
@@ -2611,14 +2587,13 @@
           if (typeof window.updateUserUI === 'function') {
             window.updateUserUI();
           }
-          window.myAppFirebase.isAuthReady = true; // Set to true to allow local storage operations
         }
       });
 
       async function syncUserDataFromFirestore(uid) {
-        // Ensure db is valid and auth is ready before proceeding
-        if (!window.myAppFirebase.db || !window.myAppFirebase.isAuthReady) {
-            console.error("Firestore object is not initialized or auth not ready for sync. Skipping data sync.");
+        // Ensure db is valid before proceeding
+        if (!window.myAppFirebase.db) {
+            console.error("Firestore object is not initialized for sync. Skipping data sync.");
             if (typeof window.displayMessage === 'function') {
                 window.displayMessage("Firebase Firestore is not ready. Data sync limited.", "error");
             }
@@ -2628,9 +2603,8 @@
             return;
         }
 
-        // Use window.myAppFirebase.appId for paths
-        const userCartRef = doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${uid}/cart`, "userCart");
-        const userWishlistRef = doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${uid}/wishlist`, "userWishlist");
+        const userCartRef = doc(window.myAppFirebase.db, `artifacts/${appId}/users/${uid}/cart`, "userCart");
+        const userWishlistRef = doc(window.myAppFirebase.db, `artifacts/${appId}/users/${uid}/wishlist`, "userWishlist");
 
         try {
           const cartDoc = await getDoc(userCartRef);
@@ -2708,15 +2682,14 @@
       }
 
       function setupFirestoreListeners(uid) {
-        // Ensure db is valid and auth is ready before proceeding
-        if (!window.myAppFirebase.db || !window.myAppFirebase.isAuthReady) {
-            console.error("Firestore object is not initialized or auth not ready for listeners. Skipping listener setup.");
+        // Ensure db is valid before proceeding
+        if (!window.myAppFirebase.db) {
+            console.error("Firestore object is not initialized for listeners. Skipping listener setup.");
             return;
         }
 
-        // Use window.myAppFirebase.appId for paths
-        const userCartRef = doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${uid}/cart`, "userCart");
-        const userWishlistRef = doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${uid}/wishlist`, "userWishlist");
+        const userCartRef = doc(window.myAppFirebase.db, `artifacts/${appId}/users/${uid}/cart`, "userCart");
+        const userWishlistRef = doc(window.myAppFirebase.db, `artifacts/${appId}/users/${uid}/wishlist`, "userWishlist");
 
         cleanupFirestoreListeners(); // Ensure previous listeners are removed
 
