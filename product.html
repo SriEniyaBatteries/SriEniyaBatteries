@@ -925,7 +925,7 @@
       const allProducts = [
         {
           id: 1,
-          name: "XIDE EPIQ-EPIQ35L/R ",
+          name: "EXIDE EPIQ-EPIQ35L/R ",
           price: 5071,
           description:
             "CAR/SUV: EXIDE EPIQ: 77M WARRANTY : 42F+35P",
@@ -1360,8 +1360,8 @@
           const amount = isCartCheckout ? window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2) : (currentProductForBuy ? currentProductForBuy.price.toFixed(2) : '0.00');
           const transactionNote = isCartCheckout ? `Payment for items in your ShopEase cart` : `Payment for ${currentProductForBuy ? currentProductForBuy.name : 'product'} from ShopEase`;
 
-          const myGPayId = 'muthu19909-2@okaxis'; // Replaced with your actual GPay UPI ID
-          const myGPayName = 'ESAKKI MUTHU'; // Replaced with your name for GPay
+          const myGPayId = 'muthu19909-2@okaxis'; // Corrected GPay UPI ID from screenshot
+          const myGPayName = 'ESAKKI MUTHU'; // Corrected GPay name from screenshot
 
           const gpayUri = `upi://pay?pa=${myGPayId}&pn=${encodeURIComponent(myGPayName)}&mc=0000&tid=TEST${Date.now()}&tr=TEST${Date.now()}&tn=${encodeURIComponent(transactionNote)}&am=${amount}&cu=INR`;
 
@@ -1399,8 +1399,8 @@
           // Attempt to open GPay app directly upon clicking "Pay with GPay"
           const amount = isCartCheckout ? window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2) : (currentProductForBuy ? currentProductForBuy.price.toFixed(2) : '0.00');
           const transactionNote = isCartCheckout ? `Payment for items in your ShopEase cart` : `Payment for ${currentProductForBuy ? currentProductForBuy.name : 'product'} from ShopEase`;
-          const myGPayId = 'muthu19909-2@okaxis'; // Replaced with your actual GPay UPI ID
-          const myGPayName = 'ESAKKI MUTHU'; // Replaced with your name for GPay
+          const myGPayId = 'muthu19909-2@okaxis'; // Corrected GPay UPI ID
+          const myGPayName = 'ESAKKI MUTHU'; // Corrected GPay name
           const gpayUri = `upi://pay?pa=${myGPayId}&pn=${encodeURIComponent(myGPayName)}&mc=0000&tid=TEST${Date.now()}&tr=TEST${Date.now()}&tn=${encodeURIComponent(transactionNote)}&am=${amount}&cu=INR`;
           window.open(gpayUri, '_blank'); // Open GPay app in a new tab/window
       });
@@ -1469,16 +1469,17 @@
 
           try {
               const currentUser = window.myAppFirebase?.currentUser;
-              if (!currentUser || currentUser.isAnonymous) { // Explicitly check if not authenticated or is anonymous
-                  console.error("User not authenticated or is anonymous. Cannot save order to a user-specific path.");
-                  displayMessage("Please log in or sign up to complete your purchase. Order could not be saved to your account.", "error", 8000);
-                  // Show payment failed screen if authentication fails
+              // Allow anonymous users to save orders
+              if (!currentUser) {
+                  console.error("No user (anonymous or authenticated) found. Cannot save order.");
+                  displayMessage("No user session found. Please refresh and try again.", "error", 8000);
+                  // Show payment failed screen if no user session
                   paymentConfirmation.classList.add('hidden');
                   paymentFailed.classList.remove('hidden');
-                  failureMessage.textContent = "You must be logged in to place an order. Please log in and try again.";
+                  failureMessage.textContent = "Could not establish a user session. Please refresh the page and try again.";
                   return; // Stop execution
               }
-              // Save order to user-specific path
+              // Save order to user-specific path (anonymous or authenticated)
               await window.myAppFirebase.addDoc(window.myAppFirebase.collection(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/orders`), orderData);
               // Display the specific success message here
               paymentConfirmation.classList.remove('hidden'); // Show success screen
@@ -1590,16 +1591,17 @@
 
           try {
               const currentUser = window.myAppFirebase?.currentUser;
-              if (!currentUser || currentUser.isAnonymous) { // Explicitly check if not authenticated or is anonymous
-                  console.error("User not authenticated or is anonymous. Cannot save order to a user-specific path.");
-                  displayMessage("Please log in or sign up to complete your purchase. Order could not be saved to your account.", "error", 8000);
-                  // Show payment failed screen if authentication fails
+              // Allow anonymous users to save orders
+              if (!currentUser) {
+                  console.error("No user (anonymous or authenticated) found. Cannot save order.");
+                  displayMessage("No user session found. Please refresh and try again.", "error", 8000);
+                  // Show payment failed screen if no user session
                   paymentConfirmation.classList.add('hidden');
                   paymentFailed.classList.remove('hidden');
-                  failureMessage.textContent = "You must be logged in to place an order. Please log in and try again.";
+                  failureMessage.textContent = "Could not establish a user session. Please refresh the page and try again.";
                   return; // Stop execution
               }
-              // Save order to user-specific path
+              // Save order to user-specific path (anonymous or authenticated)
               await window.myAppFirebase.addDoc(window.myAppFirebase.collection(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/orders`), orderData);
               displayMessage("Order placed via Cash on Delivery! Details recorded in Firestore.", "success");
 
@@ -1957,7 +1959,7 @@
           }
 
           const currentUser = window.myAppFirebase?.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          if (currentUser) { // Check for any user, including anonymous
               try {
                   const userCartRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/cart`, "userCart");
                   await window.myAppFirebase.setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
@@ -1968,6 +1970,7 @@
                   displayMessage("Failed to sync cart to cloud. Data saved locally. Error: " + e.message, "error");
               }
           } else {
+              // This else block should ideally not be hit if anonymous sign-in works
               localStorage.setItem('cart', JSON.stringify(window.cart));
               displayMessage("Product added to cart (saved locally).", "info");
           }
@@ -1979,7 +1982,7 @@
           window.cart = window.cart.filter(item => item.id !== productId);
 
           const currentUser = window.myAppFirebase?.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          if (currentUser) { // Check for any user, including anonymous
               try {
                   const userCartRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/cart`, "userCart");
                   await window.myAppFirebase.setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
@@ -1990,6 +1993,7 @@
                   displayMessage("Failed to sync cart removal to cloud. Data removed locally. Error: " + e.message, "error");
               }
           } else {
+              // This else block should ideally not be hit if anonymous sign-in works
               localStorage.setItem('cart', JSON.stringify(window.cart));
               displayMessage("Product removed from cart (removed locally).", "info");
           }
@@ -2083,7 +2087,7 @@
           }
 
           const currentUser = window.myAppFirebase?.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          if (currentUser) { // Check for any user, including anonymous
               try {
                   const userWishlistRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/wishlist`, "userWishlist");
                   await window.myAppFirebase.setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
@@ -2093,6 +2097,7 @@
                   displayMessage("Failed to sync liked list to cloud. Data saved locally. Error: " + e.message, "error");
               }
           } else {
+              // This else block should ideally not be hit if anonymous sign-in works
               localStorage.setItem('wishlist', JSON.stringify(window.wishlist));
           }
           updateWishlistDisplay();
@@ -2103,7 +2108,7 @@
           window.wishlist = window.wishlist.filter(item => item.id !== productId);
 
           const currentUser = window.myAppFirebase?.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          if (currentUser) { // Check for any user, including anonymous
               try {
                   const userWishlistRef = window.myAppFirebase.doc(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/wishlist`, "userWishlist");
                   await window.myAppFirebase.setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
@@ -2114,6 +2119,7 @@
                   displayMessage("Failed to sync liked list removal to cloud. Data removed locally. Error: " + e.message, "error");
               }
           } else {
+              // This else block should ideally not be hit if anonymous sign-in works
               localStorage.setItem('wishlist', JSON.stringify(window.wishlist));
               displayMessage("Product removed from liked list (removed locally).", "info");
           }
@@ -2191,16 +2197,7 @@
 
       // Function to open the Buy Now modal for a single product
       function openBuyNowModal(productId) {
-          const currentUser = window.myAppFirebase?.currentUser;
-          if (!currentUser || currentUser.isAnonymous) {
-              displayMessage("Please log in or sign up to complete your purchase.", "info", 5000);
-              authModal.classList.remove("hidden"); // Show auth modal
-              loginForm.classList.remove("hidden"); // Default to login
-              signupForm.classList.add("hidden");
-              loggedInUserView.classList.add("hidden");
-              return; // Prevent opening buy now modal
-          }
-
+          // No longer forcing login here. Anonymous auth will handle initial user state.
           isCartCheckout = false; // Set flag to false for single product purchase
           currentProductForBuy = allProducts.find(p => p.id === productId);
           if (!currentProductForBuy) {
@@ -2232,18 +2229,7 @@
 
       // New function to open the Buy Now modal for cart checkout
       function openCheckoutModalForCart() {
-          const currentUser = window.myAppFirebase?.currentUser;
-          if (!currentUser || currentUser.isAnonymous) {
-              displayMessage("Please log in or sign up to complete your cart checkout.", "info", 5000);
-              authModal.classList.remove("hidden"); // Show auth modal
-              loginForm.classList.remove("hidden"); // Default to login
-              signupForm.classList.add("hidden");
-              loggedInUserView.classList.add("hidden");
-              cartSidebar.classList.remove("translate-x-0"); // Close cart sidebar
-              cartSidebar.classList.add("translate-x-full");
-              return; // Prevent opening buy now modal
-          }
-
+          // No longer forcing login here. Anonymous auth will handle initial user state.
           isCartCheckout = true; // Set flag to true for cart checkout
           currentProductForBuy = null; // Clear single product context
 
@@ -2424,7 +2410,7 @@
     <!-- Firebase Module Script -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInAnonymously, linkWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
       import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // Added collection and addDoc
 
       // Firebase variables (provided by Canvas environment)
@@ -2457,10 +2443,20 @@
               loginError.textContent = "Firebase is not ready. Please try again later.";
               return;
           }
+
           try {
-              await signInWithEmailAndPassword(auth, email, password);
+              // If current user is anonymous, try to link accounts
+              if (auth.currentUser && auth.currentUser.isAnonymous) {
+                  const credential = EmailAuthProvider.credential(email, password);
+                  await linkWithCredential(auth.currentUser, credential);
+                  console.log("Anonymous account linked with email/password.");
+                  window.displayMessage("Account linked and logged in successfully!", "info");
+              } else {
+                  // Regular sign in
+                  await signInWithEmailAndPassword(auth, email, password);
+                  window.displayMessage("Logged in successfully!", "info");
+              }
               document.getElementById("authModal").classList.add("hidden");
-              window.displayMessage("Logged in successfully!", "info");
           } catch (error) {
               console.error("Login failed:", error);
               let message = "Login failed. Please try again.";
@@ -2478,6 +2474,9 @@
                   case 'auth/network-request-failed':
                       message = "Network error. Please check your internet connection.";
                       break;
+                  case 'auth/credential-already-in-use':
+                      message = "This email is already linked to another account. Please log in with that account.";
+                      break;
                   default:
                       message = "Login failed. Please try again later.";
               }
@@ -2494,9 +2493,18 @@
               return;
           }
           try {
-              await createUserWithEmailAndPassword(auth, email, password);
+              // If current user is anonymous, try to link accounts
+              if (auth.currentUser && auth.currentUser.isAnonymous) {
+                  const credential = EmailAuthProvider.credential(email, password);
+                  await linkWithCredential(auth.currentUser, credential);
+                  console.log("Anonymous account linked with new email/password.");
+                  window.displayMessage("Signed up and account linked successfully! You are now logged in.", "info");
+              } else {
+                  // Regular sign up
+                  await createUserWithEmailAndPassword(auth, email, password);
+                  window.displayMessage("Signed up successfully! You are now logged in.", "info");
+              }
               document.getElementById("authModal").classList.add("hidden");
-              window.displayMessage("Signed up successfully! You are now logged in.", "info");
           } catch (error) {
               console.error("Signup failed:", error);
               let message = "Signup failed. Please try again.";
@@ -2530,6 +2538,7 @@
           }
           try {
               // Before logging out, save current in-memory cart/wishlist to local storage
+              // This is a fallback if anonymous sign-in fails or is not desired for some reason
               localStorage.setItem('cart', JSON.stringify(window.cart));
               localStorage.setItem('wishlist', JSON.stringify(window.wishlist));
 
@@ -2537,7 +2546,7 @@
               console.log("User logged out.");
               window.displayMessage("Logged out successfully!", "info");
               document.getElementById("authModal").classList.add("hidden"); // Hide the modal after logout
-              // onAuthStateChanged will handle UI updates and data sync
+              // onAuthStateChanged will handle UI updates and data sync, including anonymous sign-in
           } catch (error) {
               console.error("Error logging out:", error);
               if (typeof window.displayMessage === 'function') {
@@ -2582,28 +2591,49 @@
               window.myAppFirebase.currentUser = user;
 
               if (typeof window.updateUserUI === 'function') {
-                  window.updateUserUI(); // This will now always ensure the generic icon is shown.
+                  window.updateUserUI();
               }
 
               if (user) {
                 console.log("User state changed. Current user:", user.uid, "Is Anonymous:", user.isAnonymous);
-                // Only sync data and set up listeners if user is authenticated (not anonymous)
-                // and if it's a new login or a change from anonymous to authenticated
-                if (!user.isAnonymous && (!previousUser || previousUser.isAnonymous)) {
-                    await syncUserDataFromFirestore(user.uid);
-                    setupFirestoreListeners(user.uid);
-                } else if (user.isAnonymous) {
-                    // If becomes anonymous, ensure local storage is used and listeners are off
+                // If a new user (or anonymous user) has just signed in, or if it's the initial load
+                // and no user is found, sign in anonymously.
+                if (!previousUser && !user) { // Initial load, no user
+                    try {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously on initial load.");
+                    } catch (e) {
+                        console.error("Anonymous sign-in failed on initial load:", e);
+                        window.displayMessage("Failed to start anonymous session. Cloud sync may not work.", "error");
+                    }
+                } else if (user.isAnonymous && previousUser && !previousUser.isAnonymous) {
+                    // This case should ideally not happen: user was authenticated, now anonymous.
+                    // It implies a logout without a new anonymous session being created.
+                    console.warn("User transitioned from authenticated to anonymous. Data might not sync correctly.");
                     cleanupFirestoreListeners();
                     if (window.cart) window.cart = JSON.parse(localStorage.getItem('cart')) || [];
                     if (window.wishlist) window.wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
                 }
-              } else {
-                console.log("User logged out.");
+                // Always sync data and set up listeners for any user (anonymous or authenticated)
+                await syncUserDataFromFirestore(user.uid);
+                setupFirestoreListeners(user.uid);
+
+              } else { // User logged out (or no user at all)
+                console.log("No user or user logged out. Attempting anonymous sign-in.");
                 cleanupFirestoreListeners();
-                // When logged out, load data from local storage
-                if (window.cart) window.cart = JSON.parse(localStorage.getItem('cart')) || [];
-                if (window.wishlist) window.wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+                try {
+                    await signInAnonymously(auth);
+                    console.log("Signed in anonymously after logout/no user.");
+                    // After anonymous sign-in, sync data from local storage to this new anonymous user
+                    await syncUserDataFromFirestore(auth.currentUser.uid);
+                    setupFirestoreListeners(auth.currentUser.uid);
+                } catch (e) {
+                    console.error("Anonymous sign-in failed after logout/no user:", e);
+                    window.displayMessage("Failed to start anonymous session. Cloud sync disabled.", "error");
+                    // Fallback to local storage if anonymous sign-in fails
+                    if (window.cart) window.cart = JSON.parse(localStorage.getItem('cart')) || [];
+                    if (window.wishlist) window.wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+                }
               }
 
               // Always update UI after any auth state change
@@ -2699,12 +2729,12 @@
           await setDoc(userCartRef, { items: JSON.stringify(window.cart) }, { merge: true });
           await setDoc(userWishlistRef, { items: JSON.stringify(window.wishlist) }, { merge: true });
 
-          // Clear local storage as data is now in Firestore
+          // Clear local storage as data is now in Firestore (only if successful)
           localStorage.removeItem('cart');
           localStorage.removeItem('wishlist');
 
           console.log("User data synced from local storage to Firestore.");
-          window.displayMessage("Your local data has been synced to your account.", "info");
+          window.displayMessage("Your data has been synced to your account.", "info");
 
         } catch (e) {
           console.error("Error syncing user data to Firestore:", e);
