@@ -925,7 +925,7 @@
       const allProducts = [
         {
           id: 1,
-          name: "EXIDE EPIQ-EPIQ35L/R ",
+          name: "XIDE EPIQ-EPIQ35L/R ",
           price: 5071,
           description:
             "CAR/SUV: EXIDE EPIQ: 77M WARRANTY : 42F+35P",
@@ -1469,10 +1469,14 @@
 
           try {
               const currentUser = window.myAppFirebase?.currentUser;
-              if (!currentUser) {
-                  console.error("No user authenticated. Cannot save order to a user-specific path.");
-                  displayMessage("Order cannot be linked to an account. Please log in and retry.", "error");
-                  throw new Error("User not authenticated for order saving.");
+              if (!currentUser || currentUser.isAnonymous) { // Explicitly check if not authenticated or is anonymous
+                  console.error("User not authenticated or is anonymous. Cannot save order to a user-specific path.");
+                  displayMessage("Please log in or sign up to complete your purchase. Order could not be saved to your account.", "error", 8000);
+                  // Show payment failed screen if authentication fails
+                  paymentConfirmation.classList.add('hidden');
+                  paymentFailed.classList.remove('hidden');
+                  failureMessage.textContent = "You must be logged in to place an order. Please log in and try again.";
+                  return; // Stop execution
               }
               // Save order to user-specific path
               await window.myAppFirebase.addDoc(window.myAppFirebase.collection(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/orders`), orderData);
@@ -1586,10 +1590,14 @@
 
           try {
               const currentUser = window.myAppFirebase?.currentUser;
-              if (!currentUser) {
-                  console.error("No user authenticated. Cannot save order to a user-specific path.");
-                  displayMessage("Order cannot be linked to an account. Please log in and retry.", "error");
-                  throw new Error("User not authenticated for order saving.");
+              if (!currentUser || currentUser.isAnonymous) { // Explicitly check if not authenticated or is anonymous
+                  console.error("User not authenticated or is anonymous. Cannot save order to a user-specific path.");
+                  displayMessage("Please log in or sign up to complete your purchase. Order could not be saved to your account.", "error", 8000);
+                  // Show payment failed screen if authentication fails
+                  paymentConfirmation.classList.add('hidden');
+                  paymentFailed.classList.remove('hidden');
+                  failureMessage.textContent = "You must be logged in to place an order. Please log in and try again.";
+                  return; // Stop execution
               }
               // Save order to user-specific path
               await window.myAppFirebase.addDoc(window.myAppFirebase.collection(window.myAppFirebase.db, `artifacts/${window.myAppFirebase.appId}/users/${currentUser.uid}/orders`), orderData);
@@ -2183,6 +2191,16 @@
 
       // Function to open the Buy Now modal for a single product
       function openBuyNowModal(productId) {
+          const currentUser = window.myAppFirebase?.currentUser;
+          if (!currentUser || currentUser.isAnonymous) {
+              displayMessage("Please log in or sign up to complete your purchase.", "info", 5000);
+              authModal.classList.remove("hidden"); // Show auth modal
+              loginForm.classList.remove("hidden"); // Default to login
+              signupForm.classList.add("hidden");
+              loggedInUserView.classList.add("hidden");
+              return; // Prevent opening buy now modal
+          }
+
           isCartCheckout = false; // Set flag to false for single product purchase
           currentProductForBuy = allProducts.find(p => p.id === productId);
           if (!currentProductForBuy) {
@@ -2214,6 +2232,18 @@
 
       // New function to open the Buy Now modal for cart checkout
       function openCheckoutModalForCart() {
+          const currentUser = window.myAppFirebase?.currentUser;
+          if (!currentUser || currentUser.isAnonymous) {
+              displayMessage("Please log in or sign up to complete your cart checkout.", "info", 5000);
+              authModal.classList.remove("hidden"); // Show auth modal
+              loginForm.classList.remove("hidden"); // Default to login
+              signupForm.classList.add("hidden");
+              loggedInUserView.classList.add("hidden");
+              cartSidebar.classList.remove("translate-x-0"); // Close cart sidebar
+              cartSidebar.classList.add("translate-x-full");
+              return; // Prevent opening buy now modal
+          }
+
           isCartCheckout = true; // Set flag to true for cart checkout
           currentProductForBuy = null; // Clear single product context
 
