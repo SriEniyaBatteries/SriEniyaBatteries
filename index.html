@@ -1443,13 +1443,14 @@
       // IMPORTANT: If you are deploying this outside the Canvas environment,
       // replace 'default-app-id' and the placeholder firebaseConfig with your actual Firebase project's configuration.
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // Fallback for appId
-      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-        apiKey: "YOUR_API_KEY", // <--- REPLACE THIS WITH YOUR ACTUAL API KEY
-        authDomain: "YOUR_AUTH_DOMAIN", // <--- REPLACE THIS
-        projectId: "YOUR_PROJECT_ID", // <--- REPLACE THIS
-        storageBucket: "YOUR_STORAGE_BUCKET", // <--- REPLACE THIS
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // <--- REPLACE THIS
-        appId: "YOUR_APP_ID" // <--- REPLACE THIS, should match the projectId's web app ID
+      const firebaseConfig = {
+         apiKey: "AIzaSyB3qfM190DXIvs-enb5bzyq-khosDnf3uo",
+         authDomain: "srieniyabatteries-c5b1f.firebaseapp.com",
+         projectId: "srieniyabatteries-c5b1f",
+         storageBucket: "srieniyabatteries-c5b1f.firebasestorage.app",
+         messagingSenderId: "199261228107",
+         appId: "1:199261228107:web:978ea6e97e2dab264491ce",
+         measurementId: "G-7R184ZWB7Z"
       };
 
       let app;
