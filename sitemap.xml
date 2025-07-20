@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://srieniyabatteries.onrender.com/index.html</loc>
+    <lastmod>2025-07-20</lastmod> <!-- Use the date you last updated this page -->
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://srieniyabatteries.onrender.com/product.html</loc>
+    <lastmod>2025-07-20</lastmod> <!-- Use the date you last updated this page -->
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://srieniyabatteries.onrender.com/contact.html</loc>
+    <lastmod>2025-07-20</lastmod> <!-- Use the date you last updated this page -->
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- Add more <url> blocks for any other pages you have (e.g., about.html, blog.html) -->
+</urlset>
